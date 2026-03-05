@@ -26,7 +26,6 @@ public:
     bool isRight;
     float progress = 0.f;
 
-    // on ajoute startProgress ici
     SideBuilding(const sf::Texture& tex, bool rightSide, float startProgress = 0.f)
         : sprite(tex), isRight(rightSide), progress(startProgress)
     {
@@ -61,9 +60,8 @@ public:
 
     void spawnInitialBuildings() {
         buildings.clear();
-        // On passe à 3 paires au lieu de 5 pour aérer
         for (int i = 2; i >= 0; i--) {
-            float p = (float)i * 0.33f; // mieux répartis sur 3 points
+            float p = (float)i * 0.33f;
             buildings.push_back(std::make_unique<SideBuilding>(buildingTex, true, p));
             buildings.push_back(std::make_unique<SideBuilding>(buildingTex, false, p));
         }
@@ -89,8 +87,7 @@ public:
             opera.setScale({0.1f + (pOp * 0.9f), 0.1f + (pOp * 0.9f)});
             opera.setPosition({500.f, (HORIZON_Y + 35.f) - (pOp * 200.f)});
 
-            if (spawnClock.getElapsedTime().asSeconds() > 5.f) {
-                // push_back normal, le draw s'occupe de le mettre au fond
+            if (spawnClock.getElapsedTime().asSeconds() > 4.f) {
                 buildings.push_back(std::make_unique<SideBuilding>(buildingTex, true, 0.f));
                 buildings.push_back(std::make_unique<SideBuilding>(buildingTex, false, 0.f));
                 spawnClock.restart();
@@ -115,7 +112,6 @@ public:
         window.draw(sky);
         window.draw(opera);
 
-        // Dessine de la fin de la liste (nouveaux/fond) vers le début (vieux/devant)
         for (auto it = buildings.rbegin(); it != buildings.rend(); ++it) {
             window.draw((*it)->sprite);
         }
@@ -190,10 +186,8 @@ public:
     Obstacle(const sf::Texture& tex) : sprite(tex), lane(rand() % 3) {}
 
     bool update(float speed) {
-        // On multiplie la vitesse par 1.3 pour qu'ils aillent un chouia plus vite
         progress += speed * 1.2f;
 
-        // Taille réduite : 0.08f au lieu de 0.11f pour que ça grossisse moins à la fin
         float s = 0.01f + (progress * 0.09f);
         sprite.setScale({s, s});
 
@@ -202,7 +196,6 @@ public:
 
         float posX = LANES_START_X[lane] + (LANES_END_X[lane] - LANES_START_X[lane]) * progress;
 
-        // On booste un peu la descente (650.f au lieu de 500.f) pour la sensation de vitesse
         float posY = (HORIZON_Y + 100.f) + (650.f * progress);
 
         sprite.setPosition({posX, posY});
@@ -228,12 +221,21 @@ public:
     std::vector<sf::IntRect> dieFrames = {{{0,235},{170,175}}, {{179,230},{170,175}}, {{380,230},{170,175}}, {{560,230},{170,175}}, {{740,230},{170,175}}, {{935,230},{170,175}}};
 
     Player(const sf::Texture& tex) : sprite(tex) { updateSpriteRect(runFrames[0]); }
+
     void updateSpriteRect(sf::IntRect rect) {
         sprite.setTextureRect(rect);
         sprite.setOrigin({(float)rect.size.x / 2.f, (float)rect.size.y});
     }
 
-    void jump() { if (state == PlayerState::RUN) { state = PlayerState::JUMP; vY = -18.f; jumpDelay = 0.3f; frameNum = 0; } }
+    void jump() {
+        if (state == PlayerState::RUN) {
+            state = PlayerState::JUMP;
+            vY = -9.5f;
+            jumpDelay = 0.2f;
+            frameNum = 0;
+        }
+    }
+
     void changeLane(int newLane) {
         if (state != PlayerState::DIE) {
             if (newLane < lane) lastDir = -1.0f; else if (newLane > lane) lastDir = 1.0f;
@@ -241,19 +243,37 @@ public:
             if (state == PlayerState::RUN) { state = PlayerState::MOVE; frameNum = 0; }
         }
     }
+
     void reset() { lane = 1; y = GROUND_Y; vY = 0.f; state = PlayerState::RUN; frameNum = 0; animTimer = 0.f; lastDir = 1.0f; }
+
     void update(float dt) {
         animTimer += dt;
         sprite.setScale({lastDir * 0.8f, 0.8f});
         float targetX = LANES_END_X[lane];
         float currX = sprite.getPosition().x;
         sprite.setPosition({currX + (targetX - currX) * 0.15f, y});
+
         if (jumpDelay > 0.f) { jumpDelay -= dt; updateSpriteRect(jumpFrames[0]); return; }
+
         std::vector<sf::IntRect>* currentList = &runFrames;
         float speed = 0.12f;
-        if (state == PlayerState::JUMP) { currentList = &jumpFrames; speed = 0.15f; vY += 0.45f; y += vY; if (y >= GROUND_Y) { y = GROUND_Y; vY = 0.f; state = PlayerState::RUN; } }
+
+        if (state == PlayerState::JUMP) {
+            currentList = &jumpFrames;
+            speed = 0.3f;
+
+            vY += 0.18f; // GRAVITÉ RÉDUITE (avant 0.45) -> elle plane !
+            y += vY;
+
+            if (y >= GROUND_Y) {
+                y = GROUND_Y;
+                vY = 0.f;
+                state = PlayerState::RUN;
+            }
+        }
         else if (state == PlayerState::MOVE) { currentList = &moveFrames; speed = 0.08f; }
         else if (state == PlayerState::DIE) { currentList = &dieFrames; speed = 0.2f; }
+
         if (animTimer > speed) {
             frameNum++;
             if (frameNum >= (int)currentList->size()) {
@@ -358,7 +378,6 @@ int main() {
             decor.update(dt, state);
             route.update(gameSpeed);
 
-            // Spawn des ennemis (tous les 1.8s)
             if (spawnTimer.getElapsedTime().asSeconds() > 1.8f) {
                 obstacles.push_back(std::make_unique<Obstacle>(oTex));
                 spawnTimer.restart();
@@ -368,12 +387,8 @@ int main() {
                 if ((*it)->update(gameSpeed)) {
                     it = obstacles.erase(it);
                 } else {
-                    // --- NOUVELLE COLLISION PLUS JUSTE ---
-                    if ((*it)->lane == ballerine.lane && (*it)->progress > 0.92f && (*it)->progress < 1.05f) {
-                        // si t'es a moins de 80px de haut, tu tapes l'obstacle
-                        // plus ce chiffre est petit, plus c'est dur de sauter
-                        // plus il est grand, plus c'est facile
-                        if (ballerine.y > GROUND_Y - 80.f) {
+                    if ((*it)->lane == ballerine.lane && (*it)->progress > 0.99f && (*it)->progress < 1.01f) {
+                        if (ballerine.y > GROUND_Y - 30.f) {
                             ballerine.state = PlayerState::DIE;
                             deathTimer.restart();
                             state = GameState::BALLERINE_FALLING;
