@@ -13,6 +13,7 @@ const float HORIZON_Y = 220.f;
 const float GROUND_Y = 750.f;
 const float LANES_END_X[] = {200.f, 500.f, 800.f};
 const float LANES_START_X[] = {500.f, 500.f, 500.f};
+const float PLAYER_LANES_END_X[] = {300.f, 500.f, 700.f};
 const float gameSpeed = 0.005f;
 
 enum class GameState { PLAYING, BALLERINE_FALLING, FADING_TO_GAMEOVER, GAMEOVER_MENU };
@@ -71,6 +72,52 @@ public:
         : sky(tSky), opera(tOpera), buildingTex(tBuilding)
     {
         sky.setPosition({0.f, 0.f});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         sf::FloatRect bOpera = opera.getLocalBounds();
         opera.setOrigin({bOpera.size.x / 2.f, bOpera.size.y / 2.f});
         opera.setPosition({500.f, HORIZON_Y + 50.f});
@@ -249,7 +296,7 @@ public:
     void update(float dt) {
         animTimer += dt;
         sprite.setScale({lastDir * 0.8f, 0.8f});
-        float targetX = LANES_END_X[lane];
+        float targetX = PLAYER_LANES_END_X[lane];
         float currX = sprite.getPosition().x;
         sprite.setPosition({currX + (targetX - currX) * 0.15f, y});
 
@@ -387,8 +434,8 @@ int main() {
                 if ((*it)->update(gameSpeed)) {
                     it = obstacles.erase(it);
                 } else {
-                    if ((*it)->lane == ballerine.lane && (*it)->progress > 0.99f && (*it)->progress < 1.01f) {
-                        if (ballerine.y > GROUND_Y - 30.f) {
+                    if ((*it)->lane == ballerine.lane && (*it)->progress > 0.60f && (*it)->progress < 0.85f) {
+                        if (ballerine.y > GROUND_Y - 10.f) {
                             ballerine.state = PlayerState::DIE;
                             deathTimer.restart();
                             state = GameState::BALLERINE_FALLING;
