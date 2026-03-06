@@ -16,10 +16,10 @@ const float LANES_START_X[] = {500.f, 500.f, 500.f};
 const float PLAYER_LANES_END_X[] = {300.f, 500.f, 700.f};
 const float gameSpeed = 0.005f;
 
-enum class GameState { PLAYING, BALLERINE_FALLING, FADING_TO_GAMEOVER, GAMEOVER_MENU };
+enum class GameState { PLAYING, BALLERINE_FALLING, FADING_TO_GAMEOVER, GAMEOVER_MENU, LEVEL_COMPLETE };
 enum class PlayerState { RUN, JUMP, MOVE, DIE };
 
-//classes
+// --- CLASSES DECORS ---
 
 class SideBuilding {
 public:
@@ -39,11 +39,9 @@ public:
         float s = 0.1f + (progress * 0.6f);
         float flip = isRight ? 1.f : -1.f;
         sprite.setScale({flip * s, s});
-
         float posY = (HORIZON_Y + 150.f) + (600.f * progress);
         float offsetX = 150.f + (progress * 700.f);
         float posX = isRight ? (500.f + offsetX) : (500.f - offsetX);
-
         sprite.setPosition({posX, posY});
         return progress > 1.0f || posY > WINDOW_HEIGHT + 300.f;
     }
@@ -57,7 +55,8 @@ public:
     std::vector<std::unique_ptr<SideBuilding>> buildings;
     sf::Clock spawnClock;
     float timer = 0.f;
-    const float targetTime = 120.f;
+    const float targetTime = 90.f;
+    bool isSpecialEvent = false;
 
     void spawnInitialBuildings() {
         buildings.clear();
@@ -72,69 +71,29 @@ public:
         : sky(tSky), opera(tOpera), buildingTex(tBuilding)
     {
         sky.setPosition({0.f, 0.f});
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         sf::FloatRect bOpera = opera.getLocalBounds();
         opera.setOrigin({bOpera.size.x / 2.f, bOpera.size.y / 2.f});
         opera.setPosition({500.f, HORIZON_Y + 50.f});
         opera.setScale({0.1f, 0.1f});
-
-        spawnInitialBuildings(); // call au debut
+        spawnInitialBuildings();
     }
 
     void update(float dt, GameState state) {
         if (state == GameState::PLAYING) {
             timer += dt;
             if (timer > targetTime) timer = targetTime;
-            float pOp = timer / targetTime;
-            opera.setScale({0.1f + (pOp * 0.9f), 0.1f + (pOp * 0.9f)});
-            opera.setPosition({500.f, (HORIZON_Y + 35.f) - (pOp * 200.f)});
 
-            if (spawnClock.getElapsedTime().asSeconds() > 4.f) {
+            float pLevel = timer / targetTime;
+
+            float skyS = 1.0f + (pLevel * 2.f);
+            sky.setScale({skyS, skyS});
+            sky.setOrigin({(sky.getLocalBounds().size.x * 0.15f) * pLevel, 0.f});
+
+            float opS = 0.1f + (pLevel * 0.3f);
+            opera.setScale({opS, opS});
+            opera.setPosition({500.f, (HORIZON_Y + 35.f) - (pLevel * 200.f)});
+
+            if (!isSpecialEvent && spawnClock.getElapsedTime().asSeconds() > 4.f) {
                 buildings.push_back(std::make_unique<SideBuilding>(buildingTex, true, 0.f));
                 buildings.push_back(std::make_unique<SideBuilding>(buildingTex, false, 0.f));
                 spawnClock.restart();
@@ -149,21 +108,24 @@ public:
 
     void reset() {
         timer = 0.f;
+        isSpecialEvent = false;
         opera.setScale({0.1f, 0.1f});
-        opera.setPosition({500.f, HORIZON_Y + 50.f});
-        spawnInitialBuildings(); // on les remet a chaque mort
+        sky.setScale({1.f, 1.f});
+        sky.setOrigin({0.f, 0.f});
+        spawnInitialBuildings();
         spawnClock.restart();
     }
 
     void draw(sf::RenderWindow& window) {
         window.draw(sky);
         window.draw(opera);
-
         for (auto it = buildings.rbegin(); it != buildings.rend(); ++it) {
             window.draw((*it)->sprite);
         }
     }
 };
+
+// --- CLASSE ROUTE ---
 
 class Road {
 public:
@@ -178,7 +140,6 @@ public:
     void update(float speed) {
         offset += speed * 0.7f;
         if (offset > 1.0f) offset -= 1.0f;
-
         va.clear();
         const int precision = 40;
         float startY = HORIZON_Y + 100.f;
@@ -188,30 +149,22 @@ public:
         for (int i = 0; i < precision; i++) {
             float p1 = (float)i / precision;
             float p2 = (float)(i + 1) / precision;
-
-            // trapeze
             float w1 = 0.15f + (p1 * 0.85f);
             float w2 = 0.15f + (p2 * 0.85f);
-
             float y1 = startY + p1 * h;
             float y2 = startY + p2 * h;
             float x1_l = 500.f - (w1 * 500.f);
             float x1_r = 500.f + (w1 * 500.f);
             float x2_l = 500.f - (w2 * 500.f);
             float x2_r = 500.f + (w2 * 500.f);
-
             float tx = (float)texture.getSize().x;
             float ty = (float)texture.getSize().y;
-
             float v1 = (p1 - offset) * ty * 2.0f;
             float v2 = (p2 - offset) * ty * 2.0f;
-
             sf::Color white = sf::Color::White;
-
             va.append(sf::Vertex({x1_l, y1}, white, {0.f, v1}));
             va.append(sf::Vertex({x1_r, y1}, white, {tx, v1}));
             va.append(sf::Vertex({x2_l, y2}, white, {0.f, v2}));
-
             va.append(sf::Vertex({x1_r, y1}, white, {tx, v1}));
             va.append(sf::Vertex({x2_r, y2}, white, {tx, v2}));
             va.append(sf::Vertex({x2_l, y2}, white, {0.f, v2}));
@@ -225,6 +178,8 @@ public:
     }
 };
 
+// --- CLASSE OBSTACLE ---
+
 class Obstacle {
 public:
     sf::Sprite sprite;
@@ -234,21 +189,18 @@ public:
 
     bool update(float speed) {
         progress += speed * 1.2f;
-
         float s = 0.01f + (progress * 0.09f);
         sprite.setScale({s, s});
-
         sf::FloatRect b = sprite.getLocalBounds();
         sprite.setOrigin({b.size.x / 2.f, b.size.y});
-
         float posX = LANES_START_X[lane] + (LANES_END_X[lane] - LANES_START_X[lane]) * progress;
-
         float posY = (HORIZON_Y + 100.f) + (650.f * progress);
-
         sprite.setPosition({posX, posY});
         return progress > 1.1f;
     }
 };
+
+// --- CLASSE PLAYER ---
 
 class Player {
 public:
@@ -277,7 +229,7 @@ public:
     void jump() {
         if (state == PlayerState::RUN) {
             state = PlayerState::JUMP;
-            vY = -9.5f;
+            vY = -14.f;
             jumpDelay = 0.2f;
             frameNum = 0;
         }
@@ -299,28 +251,18 @@ public:
         float targetX = PLAYER_LANES_END_X[lane];
         float currX = sprite.getPosition().x;
         sprite.setPosition({currX + (targetX - currX) * 0.15f, y});
-
         if (jumpDelay > 0.f) { jumpDelay -= dt; updateSpriteRect(jumpFrames[0]); return; }
-
         std::vector<sf::IntRect>* currentList = &runFrames;
         float speed = 0.12f;
-
         if (state == PlayerState::JUMP) {
             currentList = &jumpFrames;
             speed = 0.3f;
-
-            vY += 0.18f; // GRAVITÉ RÉDUITE (avant 0.45) -> elle plane !
+            vY += 0.18f;
             y += vY;
-
-            if (y >= GROUND_Y) {
-                y = GROUND_Y;
-                vY = 0.f;
-                state = PlayerState::RUN;
-            }
+            if (y >= GROUND_Y) { y = GROUND_Y; vY = 0.f; state = PlayerState::RUN; }
         }
         else if (state == PlayerState::MOVE) { currentList = &moveFrames; speed = 0.08f; }
         else if (state == PlayerState::DIE) { currentList = &dieFrames; speed = 0.2f; }
-
         if (animTimer > speed) {
             frameNum++;
             if (frameNum >= (int)currentList->size()) {
@@ -333,6 +275,8 @@ public:
         if (frameNum < (int)currentList->size()) updateSpriteRect((*currentList)[frameNum]);
     }
 };
+
+// --- CLASSE GAMEOVER ---
 
 class GameOverUI {
 public:
@@ -359,6 +303,8 @@ public:
     void reset() { alpha = 0.f; blackScreen.setFillColor(sf::Color(0, 0, 0, 0)); if (bg) bg->setColor(sf::Color(255, 255, 255, 0)); }
 };
 
+// --- MAIN ---
+
 int main() {
     sf::RenderWindow window(sf::VideoMode({(unsigned int)WINDOW_WIDTH, (unsigned int)WINDOW_HEIGHT}), "Pointes of No Return");
     window.setFramerateLimit(60);
@@ -381,11 +327,8 @@ int main() {
 
     sf::FloatRect btnReplay({260.f, 380.f}, {200.f, 80.f});
     sf::FloatRect btnQuit({560.f, 380.f}, {200.f, 80.f});
-
-    sf::Sprite spriteReplay(texBtnReplay);
-    spriteReplay.setPosition(btnReplay.position);
-    sf::Sprite spriteQuit(texBtnQuit);
-    spriteQuit.setPosition(btnQuit.position);
+    sf::Sprite spriteReplay(texBtnReplay); spriteReplay.setPosition(btnReplay.position);
+    sf::Sprite spriteQuit(texBtnQuit); spriteQuit.setPosition(btnQuit.position);
 
     std::vector<std::unique_ptr<Obstacle>> obstacles;
     sf::Clock animClock, spawnTimer, deathTimer;
@@ -397,19 +340,13 @@ int main() {
 
         while (const std::optional event = window.pollEvent()) {
             if (event->is<sf::Event::Closed>()) window.close();
-
             if (state == GameState::GAMEOVER_MENU && event->is<sf::Event::MouseButtonPressed>()) {
                 if (btnReplay.contains(mouse)) {
                     state = GameState::PLAYING;
-                    ballerine.reset();
-                    decor.reset();
-                    obstacles.clear();
-                    ui.reset();
-                    spawnTimer.restart();
+                    ballerine.reset(); decor.reset(); obstacles.clear(); ui.reset(); spawnTimer.restart();
                 }
                 else if (btnQuit.contains(mouse)) window.close();
             }
-
             if (state == GameState::PLAYING) {
                 if (const auto* kp = event->getIf<sf::Event::KeyPressed>()) {
                     if (kp->code == sf::Keyboard::Key::Left && ballerine.lane > 0) ballerine.changeLane(ballerine.lane - 1);
@@ -424,16 +361,14 @@ int main() {
         if (state == GameState::PLAYING) {
             decor.update(dt, state);
             route.update(gameSpeed);
-
+            if (decor.timer >= decor.targetTime) { state = GameState::LEVEL_COMPLETE; }
             if (spawnTimer.getElapsedTime().asSeconds() > 1.8f) {
                 obstacles.push_back(std::make_unique<Obstacle>(oTex));
                 spawnTimer.restart();
             }
-
             for (auto it = obstacles.begin(); it != obstacles.end();) {
-                if ((*it)->update(gameSpeed)) {
-                    it = obstacles.erase(it);
-                } else {
+                if ((*it)->update(gameSpeed)) it = obstacles.erase(it);
+                else {
                     if ((*it)->lane == ballerine.lane && (*it)->progress > 0.60f && (*it)->progress < 0.85f) {
                         if (ballerine.y > GROUND_Y - 10.f) {
                             ballerine.state = PlayerState::DIE;
@@ -447,29 +382,18 @@ int main() {
             }
         }
         else if (state == GameState::BALLERINE_FALLING) {
-            if (deathTimer.getElapsedTime().asSeconds() > 2.0f) {
-                ui.alpha = 0;
-                state = GameState::FADING_TO_GAMEOVER;
-            }
+            if (deathTimer.getElapsedTime().asSeconds() > 2.0f) { ui.alpha = 0; state = GameState::FADING_TO_GAMEOVER; }
         }
         else if (state == GameState::FADING_TO_GAMEOVER) {
-            if (ui.blackScreen.getFillColor().a < 255) {
-                ui.updateFade(dt, true);
-            } else {
-                ui.updateFade(dt, false);
-                if (ui.bg && ui.bg->getColor().a == 255) state = GameState::GAMEOVER_MENU;
-            }
+            if (ui.blackScreen.getFillColor().a < 255) ui.updateFade(dt, true);
+            else { ui.updateFade(dt, false); if (ui.bg && ui.bg->getColor().a == 255) state = GameState::GAMEOVER_MENU; }
         }
 
         window.clear(sf::Color(25, 25, 45));
-
-        // Dessin
         decor.draw(window);
         route.draw(window);
-
         for (auto& o : obstacles) window.draw(o->sprite);
         window.draw(ballerine.sprite);
-
         if (state == GameState::FADING_TO_GAMEOVER || state == GameState::GAMEOVER_MENU) {
             window.draw(ui.blackScreen);
             if (ui.bg) window.draw(*ui.bg);
@@ -478,7 +402,6 @@ int main() {
                 window.draw(spriteQuit);
             }
         }
-
         window.display();
     }
     return 0;
