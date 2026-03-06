@@ -19,8 +19,6 @@ const float gameSpeed = 0.005f;
 enum class GameState { PLAYING, BALLERINE_FALLING, FADING_TO_GAMEOVER, GAMEOVER_MENU, LEVEL_COMPLETE };
 enum class PlayerState { RUN, JUMP, MOVE, DIE };
 
-// --- CLASSES DECORS ---
-
 class SideBuilding {
 public:
     sf::Sprite sprite;
@@ -36,14 +34,19 @@ public:
 
     bool update(float speed) {
         progress += speed * 0.3f;
-        float s = 0.1f + (progress * 0.6f);
-        float flip = isRight ? 1.f : -1.f;
+        float s = 0.1f + (progress * 0.5f);
+
+        float flip = isRight ? -1.f : 1.f;
         sprite.setScale({flip * s, s});
+
         float posY = (HORIZON_Y + 150.f) + (600.f * progress);
-        float offsetX = 150.f + (progress * 700.f);
+
+        float offsetX = 150.f + (progress * 500.f);
+
         float posX = isRight ? (500.f + offsetX) : (500.f - offsetX);
         sprite.setPosition({posX, posY});
-        return progress > 1.0f || posY > WINDOW_HEIGHT + 300.f;
+
+        return progress > 1.5f || posY > WINDOW_HEIGHT + 600.f;
     }
 };
 
@@ -51,24 +54,15 @@ class Decor {
 public:
     sf::Sprite sky;
     sf::Sprite opera;
-    const sf::Texture& buildingTex;
+    std::vector<const sf::Texture*> buildingTextures;
     std::vector<std::unique_ptr<SideBuilding>> buildings;
     sf::Clock spawnClock;
     float timer = 0.f;
     const float targetTime = 90.f;
     bool isSpecialEvent = false;
 
-    void spawnInitialBuildings() {
-        buildings.clear();
-        for (int i = 2; i >= 0; i--) {
-            float p = (float)i * 0.33f;
-            buildings.push_back(std::make_unique<SideBuilding>(buildingTex, true, p));
-            buildings.push_back(std::make_unique<SideBuilding>(buildingTex, false, p));
-        }
-    }
-
-    Decor(const sf::Texture& tSky, const sf::Texture& tOpera, const sf::Texture& tBuilding)
-        : sky(tSky), opera(tOpera), buildingTex(tBuilding)
+    Decor(const sf::Texture& tSky, const sf::Texture& tOpera, const std::vector<const sf::Texture*>& tBuildings)
+        : sky(tSky), opera(tOpera), buildingTextures(tBuildings)
     {
         sky.setPosition({0.f, 0.f});
         sf::FloatRect bOpera = opera.getLocalBounds();
@@ -78,12 +72,24 @@ public:
         spawnInitialBuildings();
     }
 
+    void spawnInitialBuildings() {
+        buildings.clear();
+        for (int i = 2; i >= 0; i--) {
+            float p = (float)i * 0.33f;
+            // Choix au pif parmis les textures dispo
+            const sf::Texture& texL = *buildingTextures[rand() % buildingTextures.size()];
+            const sf::Texture& texR = *buildingTextures[rand() % buildingTextures.size()];
+            buildings.push_back(std::make_unique<SideBuilding>(texL, false, p));
+            buildings.push_back(std::make_unique<SideBuilding>(texR, true, p));
+        }
+    }
+
     void update(float dt, GameState state) {
         if (state == GameState::PLAYING) {
             timer += dt;
             if (timer > targetTime) timer = targetTime;
-
             float pLevel = timer / targetTime;
+
 
             float skyS = 1.0f + (pLevel * 2.f);
             sky.setScale({skyS, skyS});
@@ -93,9 +99,12 @@ public:
             opera.setScale({opS, opS});
             opera.setPosition({500.f, (HORIZON_Y + 35.f) - (pLevel * 200.f)});
 
+
             if (!isSpecialEvent && spawnClock.getElapsedTime().asSeconds() > 4.f) {
-                buildings.push_back(std::make_unique<SideBuilding>(buildingTex, true, 0.f));
-                buildings.push_back(std::make_unique<SideBuilding>(buildingTex, false, 0.f));
+                const sf::Texture& texL = *buildingTextures[rand() % buildingTextures.size()];
+                const sf::Texture& texR = *buildingTextures[rand() % buildingTextures.size()];
+                buildings.push_back(std::make_unique<SideBuilding>(texL, false, 0.f));
+                buildings.push_back(std::make_unique<SideBuilding>(texR, true, 0.f));
                 spawnClock.restart();
             }
 
@@ -107,21 +116,14 @@ public:
     }
 
     void reset() {
-        timer = 0.f;
-        isSpecialEvent = false;
-        opera.setScale({0.1f, 0.1f});
-        sky.setScale({1.f, 1.f});
-        sky.setOrigin({0.f, 0.f});
-        spawnInitialBuildings();
-        spawnClock.restart();
+        timer = 0.f; isSpecialEvent = false;
+        opera.setScale({0.1f, 0.1f}); sky.setScale({1.f, 1.f}); sky.setOrigin({0.f, 0.f});
+        spawnInitialBuildings(); spawnClock.restart();
     }
 
     void draw(sf::RenderWindow& window) {
-        window.draw(sky);
-        window.draw(opera);
-        for (auto it = buildings.rbegin(); it != buildings.rend(); ++it) {
-            window.draw((*it)->sprite);
-        }
+        window.draw(sky); window.draw(opera);
+        for (auto it = buildings.rbegin(); it != buildings.rend(); ++it) window.draw((*it)->sprite);
     }
 };
 
@@ -309,7 +311,7 @@ int main() {
     sf::RenderWindow window(sf::VideoMode({(unsigned int)WINDOW_WIDTH, (unsigned int)WINDOW_HEIGHT}), "Pointes of No Return");
     window.setFramerateLimit(60);
 
-    sf::Texture pTex, oTex, texBtnReplay, texBtnQuit, skyTex, operaTex, roadTex, buildingTex;
+    sf::Texture pTex, oTex, texBtnReplay, texBtnQuit, skyTex, operaTex, roadTex, bTex1, bTex2, bTex3;
     if (!pTex.loadFromFile("./assets/player_lvl1_pink.png")) return -1;
     if (!oTex.loadFromFile("./assets/obstacle.png")) return -1;
     if (!texBtnReplay.loadFromFile("./assets/REPLAY.png")) return -1;
@@ -317,10 +319,13 @@ int main() {
     if (!skyTex.loadFromFile("./assets/bg_sky.png")) return -1;
     if (!operaTex.loadFromFile("./assets/opéra.png")) return -1;
     if (!roadTex.loadFromFile("./assets/roof_ground.png")) return -1;
-    if (!buildingTex.loadFromFile("./assets/référence.png")) return -1;
+    if (!bTex1.loadFromFile("./assets/building1.png")) return -1;
+    if (!bTex2.loadFromFile("./assets/building2.png")) return -1;
+    if (!bTex3.loadFromFile("./assets/building3.png")) return -1;
 
+    std::vector<const sf::Texture*> texVariations = {&bTex1, &bTex2, &bTex3};
+    Decor decor(skyTex, operaTex, texVariations);
     Player ballerine(pTex);
-    Decor decor(skyTex, operaTex, buildingTex);
     Road route(roadTex);
     GameOverUI ui;
     ui.load("./assets/gameover.png");
