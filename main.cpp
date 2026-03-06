@@ -34,20 +34,31 @@ public:
 
     bool update(float speed) {
         progress += speed * 0.3f;
+
+        // TA FORMULE EXACTE (0.5f comme avant)
         float s = 0.1f + (progress * 0.5f);
 
         float flip = isRight ? -1.f : 1.f;
         sprite.setScale({flip * s, s});
 
+        // TES POSITIONS EXACTES (150 / 500 / 600)
         float posY = (HORIZON_Y + 150.f) + (600.f * progress);
-
         float offsetX = 150.f + (progress * 500.f);
-
         float posX = isRight ? (500.f + offsetX) : (500.f - offsetX);
+
         sprite.setPosition({posX, posY});
 
+        // Disparition lointaine pour pas que ça "pop"
         return progress > 1.5f || posY > WINDOW_HEIGHT + 600.f;
     }
+};
+
+
+struct SpecialEvent {
+    float triggerP;
+    const sf::Texture* tex;
+    bool isRight;
+    bool done = false;
 };
 
 class Decor {
@@ -60,23 +71,35 @@ public:
     float timer = 0.f;
     const float targetTime = 90.f;
     bool isSpecialEvent = false;
+    std::vector<SpecialEvent> specialTimeline;
+    sf::Clock clockL, clockR;
+    float nextDelayL = 2.f;
+    float nextDelayR = 4.f;
 
-    Decor(const sf::Texture& tSky, const sf::Texture& tOpera, const std::vector<const sf::Texture*>& tBuildings)
+    Decor(const sf::Texture& tSky, const sf::Texture& tOpera,
+          const std::vector<const sf::Texture*>& tBuildings,
+          const sf::Texture& tArc, const sf::Texture& tGalerie,
+          const sf::Texture& tNotreDame, const sf::Texture& tMoulin)
         : sky(tSky), opera(tOpera), buildingTextures(tBuildings)
     {
+        specialTimeline.push_back({0.15f, &tArc, false});
+        specialTimeline.push_back({0.35f, &tGalerie, false});
+        specialTimeline.push_back({0.60f, &tNotreDame, true});
+        specialTimeline.push_back({0.85f, &tMoulin, true});
+
         sky.setPosition({0.f, 0.f});
         sf::FloatRect bOpera = opera.getLocalBounds();
         opera.setOrigin({bOpera.size.x / 2.f, bOpera.size.y / 2.f});
         opera.setPosition({500.f, HORIZON_Y + 50.f});
         opera.setScale({0.1f, 0.1f});
-        spawnInitialBuildings();
+        spawnInitialBuildings(); // Elle est appelée ici...
     }
 
+    // --- LA FONCTION QUI MANQUAIT ---
     void spawnInitialBuildings() {
         buildings.clear();
         for (int i = 2; i >= 0; i--) {
             float p = (float)i * 0.33f;
-            // Choix au pif parmis les textures dispo
             const sf::Texture& texL = *buildingTextures[rand() % buildingTextures.size()];
             const sf::Texture& texR = *buildingTextures[rand() % buildingTextures.size()];
             buildings.push_back(std::make_unique<SideBuilding>(texL, false, p));
@@ -85,40 +108,84 @@ public:
     }
 
     void update(float dt, GameState state) {
-        if (state == GameState::PLAYING) {
-            timer += dt;
-            if (timer > targetTime) timer = targetTime;
-            float pLevel = timer / targetTime;
+    if (state == GameState::PLAYING) {
+        timer += dt;
+        if (timer > targetTime) timer = targetTime;
 
+        float pLevel = timer / targetTime;
 
-            float skyS = 1.0f + (pLevel * 2.f);
-            sky.setScale({skyS, skyS});
-            sky.setOrigin({(sky.getLocalBounds().size.x * 0.15f) * pLevel, 0.f});
+        // 1. GESTION DE L'OPÉRA (Grossit jusqu'à 3x sa taille)
+        // On part de 0.1f et on ajoute 0.3f pour arriver à 0.4f (qui est 4x 0.1)
+        float opS = 0.1f + (pLevel * 0.3f);
+        opera.setScale({opS, opS});
+        opera.setPosition({500.f, (HORIZON_Y + 35.f) - (pLevel * 200.f)});
 
-            float opS = 0.1f + (pLevel * 0.3f);
-            opera.setScale({opS, opS});
-            opera.setPosition({500.f, (HORIZON_Y + 35.f) - (pLevel * 200.f)});
+        // 2. TIMELINE DES MONUMENTS
+        SpecialEvent* currentEv = nullptr;
+        bool monumentIncomingL = false;
+        bool monumentIncomingR = false;
 
-
-            if (!isSpecialEvent && spawnClock.getElapsedTime().asSeconds() > 4.f) {
-                const sf::Texture& texL = *buildingTextures[rand() % buildingTextures.size()];
-                const sf::Texture& texR = *buildingTextures[rand() % buildingTextures.size()];
-                buildings.push_back(std::make_unique<SideBuilding>(texL, false, 0.f));
-                buildings.push_back(std::make_unique<SideBuilding>(texR, true, 0.f));
-                spawnClock.restart();
+        for (auto& ev : specialTimeline) {
+            if (!ev.done) {
+                // On check si un monument arrive bientôt (3% de progression avant)
+                // pour bloquer UNIQUEMENT le spawn normal de ce côté là
+                if (pLevel >= (ev.triggerP - 0.03f)) {
+                    if (ev.isRight) monumentIncomingR = true;
+                    else monumentIncomingL = true;
+                }
+                // Si on a atteint ou dépassé l'heure du trigger
+                if (pLevel >= ev.triggerP) {
+                    currentEv = &ev;
+                }
+                break; // On gère un seul monument à la fois pour pas saturer
             }
+        }
 
-            for (auto it = buildings.begin(); it != buildings.end(); ) {
-                if ((*it)->update(gameSpeed)) it = buildings.erase(it);
-                else ++it;
+        // 3. SPAWN DU MONUMENT (Si prêt)
+        if (currentEv) {
+            sf::Clock& targetClock = currentEv->isRight ? clockR : clockL;
+            // On attend que la lane soit vide depuis 8s pour le monument
+            if (targetClock.getElapsedTime().asSeconds() > 8.0f) {
+                buildings.push_back(std::make_unique<SideBuilding>(*currentEv->tex, currentEv->isRight, 0.f));
+                currentEv->done = true;
+                targetClock.restart(); // On reset l'horloge du côté concerné
+            }
+        }
+
+        // 4. SPAWN NORMAL GAUCHE (Indépendant)
+        // On spawn si : pas de monument à gauche ET délai de 3.5s passé
+        if (!monumentIncomingL && clockL.getElapsedTime().asSeconds() > 3.5f) {
+            const sf::Texture& tex = *buildingTextures[rand() % buildingTextures.size()];
+            buildings.push_back(std::make_unique<SideBuilding>(tex, false, 0.f));
+            clockL.restart();
+        }
+
+        // 5. SPAWN NORMAL DROIT (Indépendant)
+        // On spawn si : pas de monument à droite ET délai de 3.8s passé
+        if (!monumentIncomingR && clockR.getElapsedTime().asSeconds() > 3.8f) {
+            const sf::Texture& tex = *buildingTextures[rand() % buildingTextures.size()];
+            buildings.push_back(std::make_unique<SideBuilding>(tex, true, 0.f));
+            clockR.restart();
+        }
+
+        // 6. UPDATE DE TOUS LES BÂTIMENTS (Normaux + Spéciaux)
+        for (auto it = buildings.begin(); it != buildings.end(); ) {
+            // Utilise ta formule stable (s = 0.1 + progress * 0.5)
+            if ((*it)->update(gameSpeed)) {
+                it = buildings.erase(it);
+            } else {
+                ++it;
             }
         }
     }
+}
 
     void reset() {
         timer = 0.f; isSpecialEvent = false;
+        for (auto& ev : specialTimeline) ev.done = false;
         opera.setScale({0.1f, 0.1f}); sky.setScale({1.f, 1.f}); sky.setOrigin({0.f, 0.f});
-        spawnInitialBuildings(); spawnClock.restart();
+        spawnInitialBuildings(); // ... et ici
+        spawnClock.restart();
     }
 
     void draw(sf::RenderWindow& window) {
@@ -259,7 +326,7 @@ public:
         if (state == PlayerState::JUMP) {
             currentList = &jumpFrames;
             speed = 0.3f;
-            vY += 0.18f;
+            vY += 0.32f;
             y += vY;
             if (y >= GROUND_Y) { y = GROUND_Y; vY = 0.f; state = PlayerState::RUN; }
         }
@@ -311,7 +378,7 @@ int main() {
     sf::RenderWindow window(sf::VideoMode({(unsigned int)WINDOW_WIDTH, (unsigned int)WINDOW_HEIGHT}), "Pointes of No Return");
     window.setFramerateLimit(60);
 
-    sf::Texture pTex, oTex, texBtnReplay, texBtnQuit, skyTex, operaTex, roadTex, bTex1, bTex2, bTex3;
+    sf::Texture pTex, oTex, texBtnReplay, texBtnQuit, skyTex, operaTex, roadTex, bTex1, bTex2, bTex3, tArc, tGalerie, tNotreDame, tMoulin, texSettings, texScoreIcon;
     if (!pTex.loadFromFile("./assets/player_lvl1_pink.png")) return -1;
     if (!oTex.loadFromFile("./assets/obstacle.png")) return -1;
     if (!texBtnReplay.loadFromFile("./assets/REPLAY.png")) return -1;
@@ -322,9 +389,17 @@ int main() {
     if (!bTex1.loadFromFile("./assets/building1.png")) return -1;
     if (!bTex2.loadFromFile("./assets/building2.png")) return -1;
     if (!bTex3.loadFromFile("./assets/building3.png")) return -1;
+    if (!tArc.loadFromFile("./assets/arc_de_triomphe.png") ||
+        !tGalerie.loadFromFile("./assets/galeries_lafayette.png") ||
+        !tNotreDame.loadFromFile("./assets/notre_dame.png") ||
+        !tMoulin.loadFromFile("./assets/moulin_rouge.png")) {
+        return -1;
+        }
+    if (!texSettings.loadFromFile("./assets/settings_icon.png")) return -1;
+    if (!texScoreIcon.loadFromFile("./assets/score_icon.png")) return -1;
 
     std::vector<const sf::Texture*> texVariations = {&bTex1, &bTex2, &bTex3};
-    Decor decor(skyTex, operaTex, texVariations);
+    Decor decor(skyTex, operaTex, texVariations, tArc, tGalerie, tNotreDame, tMoulin);
     Player ballerine(pTex);
     Road route(roadTex);
     GameOverUI ui;
@@ -334,24 +409,55 @@ int main() {
     sf::FloatRect btnQuit({560.f, 380.f}, {200.f, 80.f});
     sf::Sprite spriteReplay(texBtnReplay); spriteReplay.setPosition(btnReplay.position);
     sf::Sprite spriteQuit(texBtnQuit); spriteQuit.setPosition(btnQuit.position);
+    sf::Sprite spriteSettings(texSettings);
+    spriteSettings.setScale({0.35f, 0.35f});
+    spriteSettings.setPosition({WINDOW_WIDTH - 77.f, 35.f});
+    sf::Sprite spriteScoreIcon(texScoreIcon);
+    spriteScoreIcon.setScale({0.57f, 0.57f});
+    spriteScoreIcon.setPosition({17.f, 20.f});
 
     std::vector<std::unique_ptr<Obstacle>> obstacles;
     sf::Clock animClock, spawnTimer, deathTimer;
     GameState state = GameState::PLAYING;
+    int score = 0;
+    sf::Font font;
+    if (!font.openFromFile("./assets/police_futura.ttf")) {
+        std::cout << "Font non trouvée" << std::endl;
+    }
+
+    sf::Text scoreText(font);
+    scoreText.setCharacterSize(20);
+    scoreText.setFillColor(sf::Color::Black);
+    scoreText.setOutlineColor(sf::Color::White);
+    scoreText.setOutlineThickness(3.f);
+    scoreText.setPosition({150.f, 44.f});
+    bool showSettingsMenu = false;
+    sf::RectangleShape dropdownBg({150.f, 120.f});
+    dropdownBg.setFillColor(sf::Color(50, 50, 50, 200));
+    dropdownBg.setOutlineThickness(2.f);
+    dropdownBg.setOutlineColor(sf::Color::White);
 
     while (window.isOpen()) {
         float dt = animClock.restart().asSeconds();
         sf::Vector2f mouse = static_cast<sf::Vector2f>(sf::Mouse::getPosition(window));
 
+        // --- UNE SEULE BOUCLE EVENT ---
         while (const std::optional event = window.pollEvent()) {
             if (event->is<sf::Event::Closed>()) window.close();
-            if (state == GameState::GAMEOVER_MENU && event->is<sf::Event::MouseButtonPressed>()) {
-                if (btnReplay.contains(mouse)) {
+
+            if (event->is<sf::Event::MouseButtonPressed>()) {
+                if (spriteSettings.getGlobalBounds().contains(mouse)) {
+                    showSettingsMenu = !showSettingsMenu;
+                }
+                if (state == GameState::GAMEOVER_MENU && btnReplay.contains(mouse)) {
                     state = GameState::PLAYING;
                     ballerine.reset(); decor.reset(); obstacles.clear(); ui.reset(); spawnTimer.restart();
                 }
-                else if (btnQuit.contains(mouse)) window.close();
+                else if (state == GameState::GAMEOVER_MENU && btnQuit.contains(mouse)) {
+                    window.close();
+                }
             }
+
             if (state == GameState::PLAYING) {
                 if (const auto* kp = event->getIf<sf::Event::KeyPressed>()) {
                     if (kp->code == sf::Keyboard::Key::Left && ballerine.lane > 0) ballerine.changeLane(ballerine.lane - 1);
@@ -361,16 +467,23 @@ int main() {
             }
         }
 
+        // --- UPDATE ---
         ballerine.update(dt);
 
         if (state == GameState::PLAYING) {
+            score = static_cast<int>(decor.timer * 100);
+            scoreText.setString(std::to_string(score));
+
             decor.update(dt, state);
             route.update(gameSpeed);
+
             if (decor.timer >= decor.targetTime) { state = GameState::LEVEL_COMPLETE; }
+
             if (spawnTimer.getElapsedTime().asSeconds() > 1.8f) {
                 obstacles.push_back(std::make_unique<Obstacle>(oTex));
                 spawnTimer.restart();
             }
+
             for (auto it = obstacles.begin(); it != obstacles.end();) {
                 if ((*it)->update(gameSpeed)) it = obstacles.erase(it);
                 else {
@@ -379,6 +492,7 @@ int main() {
                             ballerine.state = PlayerState::DIE;
                             deathTimer.restart();
                             state = GameState::BALLERINE_FALLING;
+                            showSettingsMenu = false;
                             break;
                         }
                     }
@@ -394,11 +508,14 @@ int main() {
             else { ui.updateFade(dt, false); if (ui.bg && ui.bg->getColor().a == 255) state = GameState::GAMEOVER_MENU; }
         }
 
+        // --- DRAW ---
         window.clear(sf::Color(25, 25, 45));
         decor.draw(window);
         route.draw(window);
+
         for (auto& o : obstacles) window.draw(o->sprite);
         window.draw(ballerine.sprite);
+
         if (state == GameState::FADING_TO_GAMEOVER || state == GameState::GAMEOVER_MENU) {
             window.draw(ui.blackScreen);
             if (ui.bg) window.draw(*ui.bg);
@@ -407,6 +524,16 @@ int main() {
                 window.draw(spriteQuit);
             }
         }
+
+        window.draw(spriteScoreIcon);
+        window.draw(scoreText);
+        window.draw(spriteSettings);
+
+        if (showSettingsMenu) {
+            dropdownBg.setPosition({WINDOW_WIDTH - 170.f, 100.f});
+            window.draw(dropdownBg);
+        }
+
         window.display();
     }
     return 0;
