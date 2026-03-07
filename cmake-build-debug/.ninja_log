@@ -1,0 +1,9 @@
+# ninja log v6
+1721	1876	1772843153129196009	Pointes_of_No_Return	a50ea931badd334b
+9	1684	1772843151417825508	CMakeFiles/Pointes_of_No_Return.dir/main.cpp.o	b69967b6ef23b77d
+6	209	1772387448408368105	build.ninja	d65ed46064f5fc45
+6	209	1772387448408368105	/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/cmake-build-debug/cmake_install.cmake	d65ed46064f5fc45
+26	4317	1772900172545212488	CMakeFiles/Pointes_of_No_Return.dir/main.cpp.o	b69967b6ef23b77d
+4318	4698	1772900176837362167	Pointes_of_No_Return	a50ea931badd334b
+24	2365	1772900516847346899	CMakeFiles/Pointes_of_No_Return.dir/main.cpp.o	b69967b6ef23b77d
+2391	2641	1772900519214714311	Pointes_of_No_Return	a50ea931badd334b
