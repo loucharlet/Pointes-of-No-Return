@@ -1,0 +1,246 @@
+#include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
+#include <optional>
+#include <vector>
+#include <memory>
+#include <iostream>
+
+#include "Constants.h"
+#include "Player.h"
+#include "Decor.h"
+#include "Road.h"
+#include "Obstacle.h"
+#include "SideBuilding.h"
+#include "GameOverUI.h"
+
+int main() {
+    sf::RenderWindow window(sf::VideoMode({(unsigned int)WINDOW_WIDTH, (unsigned int)WINDOW_HEIGHT}), "Pointes of No Return");
+    window.setFramerateLimit(60);
+
+    // textures
+    sf::Texture pTex, oTex, texBtnReplay, texBtnQuit, skyTex, operaTex, roadTex, bTex1, bTex2, bTex3, tArc, tGalerie, tNotreDame, tMoulin, texSettings, texScoreIcon;
+    pTex.loadFromFile("./assets/player_lvl1_pink.png");
+    oTex.loadFromFile("./assets/obstacle.png");
+    texBtnReplay.loadFromFile("./assets/REPLAY.png");
+    texBtnQuit.loadFromFile("./assets/QUIT.png");
+    skyTex.loadFromFile("./assets/bg_sky.png");
+    operaTex.loadFromFile("./assets/opéra.png");
+    roadTex.loadFromFile("./assets/roof_ground.png");
+    bTex1.loadFromFile("./assets/building1.png");
+    bTex2.loadFromFile("./assets/building2.png");
+    bTex3.loadFromFile("./assets/building3.png");
+    tArc.loadFromFile("./assets/arc_de_triomphe.png");
+    tGalerie.loadFromFile("./assets/galeries_lafayette.png");
+    tNotreDame.loadFromFile("./assets/notre_dame.png");
+    tMoulin.loadFromFile("./assets/moulin_rouge.png");
+    texSettings.loadFromFile("./assets/settings_icon.png");
+    texScoreIcon.loadFromFile("./assets/score_icon.png");
+
+    // audio
+    sf::Music levelMusic, gameOverMusic;
+    levelMusic.openFromFile("./assets/level_theme.ogg");
+    levelMusic.setLooping(true);
+    gameOverMusic.openFromFile("./assets/gameover_theme.ogg");
+    gameOverMusic.setLooping(true);
+    levelMusic.play();
+
+    // init objets
+    std::vector<const sf::Texture*> texVariations = {&bTex1, &bTex2, &bTex3};
+    Decor decor(skyTex, operaTex, texVariations, tArc, tGalerie, tNotreDame, tMoulin);
+    Player ballerine(pTex);
+    Road route(roadTex);
+    GameOverUI ui;
+    ui.load("./assets/gameover.png");
+
+    sf::Font font;
+    font.openFromFile("./assets/police_futura.ttf");
+
+    // UI Score
+    sf::Text scoreText(font, "0", 25);
+    scoreText.setFillColor(sf::Color::Black);
+    scoreText.setPosition({150.f, 44.f});
+    sf::Sprite spriteScoreIcon(texScoreIcon);
+    spriteScoreIcon.setScale({0.57f, 0.57f});
+    spriteScoreIcon.setPosition({17.f, 20.f});
+
+    // Gear icon
+    sf::Sprite spriteSettings(texSettings);
+    spriteSettings.setScale({0.35f, 0.35f});
+    spriteSettings.setPosition({WINDOW_WIDTH - 80.f, 30.f});
+
+    // 1. MENU DEROULANT (sous la roue)
+    sf::RectangleShape settingsBg({160.f, 120.f});
+    settingsBg.setFillColor(sf::Color(50, 50, 50, 230));
+    settingsBg.setPosition({WINDOW_WIDTH - 180.f, 85.f});
+
+    sf::Text txtQuit(font, "Quit", 22), txtRestart(font, "Restart", 22), txtOpenSettings(font, "Settings", 22);
+    txtQuit.setPosition({WINDOW_WIDTH - 170.f, 95.f});
+    txtRestart.setPosition({WINDOW_WIDTH - 170.f, 130.f});
+    txtOpenSettings.setPosition({WINDOW_WIDTH - 170.f, 165.f});
+
+    // 2. GRAND PANEL CENTRAL
+    sf::RectangleShape bigPanel({600.f, 500.f});
+    bigPanel.setFillColor(sf::Color(20, 20, 20, 250));
+    bigPanel.setOutlineThickness(5.f);
+    bigPanel.setOutlineColor(sf::Color::White);
+    bigPanel.setOrigin({300.f, 250.f});
+    bigPanel.setPosition({WINDOW_WIDTH / 2.f, WINDOW_HEIGHT / 2.f});
+
+    sf::Text pTitle(font, "SETTINGS", 45);
+    pTitle.setPosition({WINDOW_WIDTH/2.f - 100.f, 180.f});
+    sf::Text pMusic(font, "Music: ON", 30); pMusic.setPosition({320.f, 280.f});
+    sf::Text pSfx(font, "SFX: ON", 30); pSfx.setPosition({320.f, 340.f});
+    sf::Text pVol(font, "Volume: 100", 30); pVol.setPosition({320.f, 400.f});
+    sf::Text pClose(font, "X", 25); pClose.setPosition({WINDOW_WIDTH/2.f + 160.f, 170.f});
+    pClose.setFillColor(sf::Color::Red);
+
+    // Game Over
+    sf::Sprite sReplay(texBtnReplay), sQuit(texBtnQuit);
+    sReplay.setPosition({260.f, 400.f});
+    sQuit.setPosition({560.f, 400.f});
+
+    // logic vars
+    std::vector<std::unique_ptr<Obstacle>> obstacles;
+    sf::Clock animClock, spawnTimer, deathTimer;
+    GameState state = GameState::PLAYING;
+    bool showSettingsMenu = false;
+    bool showSettingsPanel = false;
+    float volume = 100.f;
+    bool musicOn = true;
+    bool sfxOn = true;
+
+    while (window.isOpen()) {
+        float dt = animClock.restart().asSeconds();
+        float gameDt = (showSettingsMenu || showSettingsPanel || state != GameState::PLAYING) ? 0.f : dt;
+
+        while (const std::optional event = window.pollEvent()) {
+            if (event->is<sf::Event::Closed>()) window.close();
+
+            if (const auto* mbp = event->getIf<sf::Event::MouseButtonPressed>()) {
+                sf::Vector2f mPos = window.mapPixelToCoords(mbp->position);
+
+                // --- CLICS PANEL CENTRAL ---
+                if (showSettingsPanel) {
+                    if (pClose.getGlobalBounds().contains(mPos)) showSettingsPanel = false;
+                    if (pMusic.getGlobalBounds().contains(mPos)) {
+                        musicOn = !musicOn;
+                        if (musicOn) levelMusic.play(); else levelMusic.pause();
+                        pMusic.setString(musicOn ? "Music: ON" : "Music: OFF");
+                    }
+                    if (pVol.getGlobalBounds().contains(mPos)) {
+                        volume = (volume >= 100.f) ? 0.f : volume + 20.f;
+                        levelMusic.setVolume(volume);
+                        pVol.setString("Volume: " + std::to_string((int)volume));
+                    }
+                    if (pSfx.getGlobalBounds().contains(mPos)) {
+                        sfxOn = !sfxOn;
+                        pSfx.setString(sfxOn ? "SFX: ON" : "SFX: OFF");
+                    }
+                }
+                // --- CLICS MENU DEROULANT ---
+                else if (showSettingsMenu) {
+                    if (txtOpenSettings.getGlobalBounds().contains(mPos)) {
+                        showSettingsPanel = true;
+                        showSettingsMenu = false;
+                    }
+                    else if (txtRestart.getGlobalBounds().contains(mPos)) {
+                        state = GameState::PLAYING; ballerine.reset(); decor.reset(); obstacles.clear(); ui.reset();
+                        showSettingsMenu = false;
+                    }
+                    else if (txtQuit.getGlobalBounds().contains(mPos)) window.close();
+                    else if (spriteSettings.getGlobalBounds().contains(mPos)) showSettingsMenu = false;
+                }
+                // --- CLICS GAME OVER ---
+                else if (state == GameState::GAMEOVER_MENU) {
+                    if (sReplay.getGlobalBounds().contains(mPos)) {
+                        state = GameState::PLAYING; ballerine.reset(); decor.reset(); obstacles.clear(); ui.reset();
+                        gameOverMusic.stop(); if(musicOn) levelMusic.play();
+                    }
+                    if (sQuit.getGlobalBounds().contains(mPos)) window.close();
+                }
+                // --- OUVRIR GEAR ---
+                else if (spriteSettings.getGlobalBounds().contains(mPos)) {
+                    showSettingsMenu = true;
+                }
+            }
+
+            if (gameDt > 0.f && state == GameState::PLAYING) {
+                if (const auto* kp = event->getIf<sf::Event::KeyPressed>()) {
+                    if (kp->code == sf::Keyboard::Key::Left && ballerine.lane > 0) ballerine.changeLane(ballerine.lane - 1);
+                    if (kp->code == sf::Keyboard::Key::Right && ballerine.lane < 2) ballerine.changeLane(ballerine.lane + 1);
+                    if (kp->code == sf::Keyboard::Key::Space) ballerine.jump();
+                }
+            }
+        }
+
+        // update
+        if (state == GameState::PLAYING && gameDt > 0.f) {
+            ballerine.update(gameDt);
+            decor.update(gameDt, state);
+            route.update(gameSpeed);
+            scoreText.setString(std::to_string((int)(decor.timer * 100)));
+            if (spawnTimer.getElapsedTime().asSeconds() > 1.8f) {
+                obstacles.push_back(std::make_unique<Obstacle>(oTex));
+                spawnTimer.restart();
+            }
+            for (auto it = obstacles.begin(); it != obstacles.end();) {
+                if ((*it)->update(gameSpeed)) it = obstacles.erase(it);
+                else {
+                    if ((*it)->lane == ballerine.lane && (*it)->progress > 0.65f && (*it)->progress < 0.85f && ballerine.y > GROUND_Y - 20.f) {
+                        state = GameState::BALLERINE_FALLING;
+                        ballerine.state = PlayerState::DIE;
+                        deathTimer.restart();
+                        levelMusic.stop();
+                        if (musicOn) gameOverMusic.play();
+                    }
+                    ++it;
+                }
+            }
+        } else if (state == GameState::BALLERINE_FALLING) {
+            ballerine.update(dt);
+            if (deathTimer.getElapsedTime().asSeconds() > 2.0f) state = GameState::FADING_TO_GAMEOVER;
+        } else if (state == GameState::FADING_TO_GAMEOVER) {
+            ui.updateFade(dt, true);
+            if (ui.blackScreen.getFillColor().a >= 254) state = GameState::GAMEOVER_MENU;
+        }
+
+        // draw
+        window.clear(sf::Color(25, 25, 45));
+        decor.draw(window);
+        route.draw(window);
+        for (auto& o : obstacles) window.draw(o->sprite);
+        window.draw(ballerine.sprite);
+        window.draw(spriteScoreIcon);
+        window.draw(scoreText);
+        window.draw(spriteSettings);
+
+        if (showSettingsMenu) {
+            window.draw(settingsBg);
+            window.draw(txtQuit);
+            window.draw(txtRestart);
+            window.draw(txtOpenSettings);
+        }
+
+        if (state == GameState::FADING_TO_GAMEOVER || state == GameState::GAMEOVER_MENU) {
+            if (state == GameState::GAMEOVER_MENU) ui.updateFade(dt, false);
+            window.draw(ui.blackScreen);
+            if (state == GameState::GAMEOVER_MENU) {
+                if (ui.bg) window.draw(*ui.bg);
+                window.draw(sReplay);
+                window.draw(sQuit);
+            }
+        }
+
+        if (showSettingsPanel) {
+            window.draw(bigPanel);
+            window.draw(pTitle);
+            window.draw(pMusic);
+            window.draw(pSfx);
+            window.draw(pVol);
+            window.draw(pClose);
+        }
+
+        window.display();
+    }
+    return 0;
+}

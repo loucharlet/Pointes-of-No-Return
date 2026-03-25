@@ -1,8 +1,38 @@
 [
 {
   "directory": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/cmake-build-debug",
-  "command": "/usr/bin/c++ -I/opt/homebrew/include -g -std=gnu++20 -arch arm64 -fcolor-diagnostics -o CMakeFiles/Pointes_of_No_Return.dir/main.cpp.o -c /Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/main.cpp",
-  "file": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/main.cpp",
-  "output": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/cmake-build-debug/CMakeFiles/Pointes_of_No_Return.dir/main.cpp.o"
+  "command": "/usr/bin/c++ -I/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/include -I/opt/homebrew/include -g -std=gnu++20 -arch arm64 -fcolor-diagnostics -o CMakeFiles/Pointes_of_No_Return.dir/src/main.cpp.o -c /Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/src/main.cpp",
+  "file": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/src/main.cpp",
+  "output": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/cmake-build-debug/CMakeFiles/Pointes_of_No_Return.dir/src/main.cpp.o"
+},
+{
+  "directory": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/cmake-build-debug",
+  "command": "/usr/bin/c++ -I/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/include -I/opt/homebrew/include -g -std=gnu++20 -arch arm64 -fcolor-diagnostics -o CMakeFiles/Pointes_of_No_Return.dir/src/Player.cpp.o -c /Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/src/Player.cpp",
+  "file": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/src/Player.cpp",
+  "output": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/cmake-build-debug/CMakeFiles/Pointes_of_No_Return.dir/src/Player.cpp.o"
+},
+{
+  "directory": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/cmake-build-debug",
+  "command": "/usr/bin/c++ -I/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/include -I/opt/homebrew/include -g -std=gnu++20 -arch arm64 -fcolor-diagnostics -o CMakeFiles/Pointes_of_No_Return.dir/src/Decor.cpp.o -c /Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/src/Decor.cpp",
+  "file": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/src/Decor.cpp",
+  "output": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/cmake-build-debug/CMakeFiles/Pointes_of_No_Return.dir/src/Decor.cpp.o"
+},
+{
+  "directory": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/cmake-build-debug",
+  "command": "/usr/bin/c++ -I/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/include -I/opt/homebrew/include -g -std=gnu++20 -arch arm64 -fcolor-diagnostics -o CMakeFiles/Pointes_of_No_Return.dir/src/SideBuilding.cpp.o -c /Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/src/SideBuilding.cpp",
+  "file": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/src/SideBuilding.cpp",
+  "output": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/cmake-build-debug/CMakeFiles/Pointes_of_No_Return.dir/src/SideBuilding.cpp.o"
+},
+{
+  "directory": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/cmake-build-debug",
+  "command": "/usr/bin/c++ -I/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/include -I/opt/homebrew/include -g -std=gnu++20 -arch arm64 -fcolor-diagnostics -o CMakeFiles/Pointes_of_No_Return.dir/src/Road.cpp.o -c /Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/src/Road.cpp",
+  "file": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/src/Road.cpp",
+  "output": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/cmake-build-debug/CMakeFiles/Pointes_of_No_Return.dir/src/Road.cpp.o"
+},
+{
+  "directory": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/cmake-build-debug",
+  "command": "/usr/bin/c++ -I/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/include -I/opt/homebrew/include -g -std=gnu++20 -arch arm64 -fcolor-diagnostics -o CMakeFiles/Pointes_of_No_Return.dir/src/Obstacle.cpp.o -c /Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/src/Obstacle.cpp",
+  "file": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/src/Obstacle.cpp",
+  "output": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/cmake-build-debug/CMakeFiles/Pointes_of_No_Return.dir/src/Obstacle.cpp.o"
 }
 ]
