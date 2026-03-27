@@ -1,8 +1,8 @@
-#.o
-#*.dir/
-            #CMakeCache.txt
-            #CMakeFiles/
-            #Makefile
-            #cmake_install.cmake
-            #Pointes_of_No_Return
-            #.DS_Store
+.o
+*.dir/
+CMakeCache.txt
+CMakeFiles/
+Makefile
+cmake_install.cmake
+Pointes_of_No_Return
+.DS_Store
