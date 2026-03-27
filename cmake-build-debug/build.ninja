@@ -49,13 +49,53 @@ cmake_ninja_workdir = /Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-
 
 build cmake_object_order_depends_target_Pointes_of_No_Return: phony || .
 
-build CMakeFiles/Pointes_of_No_Return.dir/main.cpp.o: CXX_COMPILER__Pointes_of_No_Return_unscanned_Debug /Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/main.cpp || cmake_object_order_depends_target_Pointes_of_No_Return
+build CMakeFiles/Pointes_of_No_Return.dir/src/main.cpp.o: CXX_COMPILER__Pointes_of_No_Return_unscanned_Debug /Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/src/main.cpp || cmake_object_order_depends_target_Pointes_of_No_Return
   CONFIG = Debug
-  DEP_FILE = CMakeFiles/Pointes_of_No_Return.dir/main.cpp.o.d
+  DEP_FILE = CMakeFiles/Pointes_of_No_Return.dir/src/main.cpp.o.d
   FLAGS = -g -std=gnu++20 -arch arm64 -fcolor-diagnostics
-  INCLUDES = -I/opt/homebrew/include
+  INCLUDES = -I/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/include -I/opt/homebrew/include
   OBJECT_DIR = CMakeFiles/Pointes_of_No_Return.dir
-  OBJECT_FILE_DIR = CMakeFiles/Pointes_of_No_Return.dir
+  OBJECT_FILE_DIR = CMakeFiles/Pointes_of_No_Return.dir/src
+
+build CMakeFiles/Pointes_of_No_Return.dir/src/Player.cpp.o: CXX_COMPILER__Pointes_of_No_Return_unscanned_Debug /Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/src/Player.cpp || cmake_object_order_depends_target_Pointes_of_No_Return
+  CONFIG = Debug
+  DEP_FILE = CMakeFiles/Pointes_of_No_Return.dir/src/Player.cpp.o.d
+  FLAGS = -g -std=gnu++20 -arch arm64 -fcolor-diagnostics
+  INCLUDES = -I/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/include -I/opt/homebrew/include
+  OBJECT_DIR = CMakeFiles/Pointes_of_No_Return.dir
+  OBJECT_FILE_DIR = CMakeFiles/Pointes_of_No_Return.dir/src
+
+build CMakeFiles/Pointes_of_No_Return.dir/src/Decor.cpp.o: CXX_COMPILER__Pointes_of_No_Return_unscanned_Debug /Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/src/Decor.cpp || cmake_object_order_depends_target_Pointes_of_No_Return
+  CONFIG = Debug
+  DEP_FILE = CMakeFiles/Pointes_of_No_Return.dir/src/Decor.cpp.o.d
+  FLAGS = -g -std=gnu++20 -arch arm64 -fcolor-diagnostics
+  INCLUDES = -I/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/include -I/opt/homebrew/include
+  OBJECT_DIR = CMakeFiles/Pointes_of_No_Return.dir
+  OBJECT_FILE_DIR = CMakeFiles/Pointes_of_No_Return.dir/src
+
+build CMakeFiles/Pointes_of_No_Return.dir/src/SideBuilding.cpp.o: CXX_COMPILER__Pointes_of_No_Return_unscanned_Debug /Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/src/SideBuilding.cpp || cmake_object_order_depends_target_Pointes_of_No_Return
+  CONFIG = Debug
+  DEP_FILE = CMakeFiles/Pointes_of_No_Return.dir/src/SideBuilding.cpp.o.d
+  FLAGS = -g -std=gnu++20 -arch arm64 -fcolor-diagnostics
+  INCLUDES = -I/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/include -I/opt/homebrew/include
+  OBJECT_DIR = CMakeFiles/Pointes_of_No_Return.dir
+  OBJECT_FILE_DIR = CMakeFiles/Pointes_of_No_Return.dir/src
+
+build CMakeFiles/Pointes_of_No_Return.dir/src/Road.cpp.o: CXX_COMPILER__Pointes_of_No_Return_unscanned_Debug /Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/src/Road.cpp || cmake_object_order_depends_target_Pointes_of_No_Return
+  CONFIG = Debug
+  DEP_FILE = CMakeFiles/Pointes_of_No_Return.dir/src/Road.cpp.o.d
+  FLAGS = -g -std=gnu++20 -arch arm64 -fcolor-diagnostics
+  INCLUDES = -I/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/include -I/opt/homebrew/include
+  OBJECT_DIR = CMakeFiles/Pointes_of_No_Return.dir
+  OBJECT_FILE_DIR = CMakeFiles/Pointes_of_No_Return.dir/src
+
+build CMakeFiles/Pointes_of_No_Return.dir/src/Obstacle.cpp.o: CXX_COMPILER__Pointes_of_No_Return_unscanned_Debug /Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/src/Obstacle.cpp || cmake_object_order_depends_target_Pointes_of_No_Return
+  CONFIG = Debug
+  DEP_FILE = CMakeFiles/Pointes_of_No_Return.dir/src/Obstacle.cpp.o.d
+  FLAGS = -g -std=gnu++20 -arch arm64 -fcolor-diagnostics
+  INCLUDES = -I/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/include -I/opt/homebrew/include
+  OBJECT_DIR = CMakeFiles/Pointes_of_No_Return.dir
+  OBJECT_FILE_DIR = CMakeFiles/Pointes_of_No_Return.dir/src
 
 
 # =============================================================================
@@ -65,7 +105,7 @@ build CMakeFiles/Pointes_of_No_Return.dir/main.cpp.o: CXX_COMPILER__Pointes_of_N
 #############################################
 # Link the executable Pointes_of_No_Return
 
-build Pointes_of_No_Return: CXX_EXECUTABLE_LINKER__Pointes_of_No_Return_Debug CMakeFiles/Pointes_of_No_Return.dir/main.cpp.o
+build Pointes_of_No_Return: CXX_EXECUTABLE_LINKER__Pointes_of_No_Return_Debug CMakeFiles/Pointes_of_No_Return.dir/src/main.cpp.o CMakeFiles/Pointes_of_No_Return.dir/src/Player.cpp.o CMakeFiles/Pointes_of_No_Return.dir/src/Decor.cpp.o CMakeFiles/Pointes_of_No_Return.dir/src/SideBuilding.cpp.o CMakeFiles/Pointes_of_No_Return.dir/src/Road.cpp.o CMakeFiles/Pointes_of_No_Return.dir/src/Obstacle.cpp.o
   CONFIG = Debug
   FLAGS = -g -arch arm64
   LINK_FLAGS = -Wl,-search_paths_first -Wl,-headerpad_max_install_names
