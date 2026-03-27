@@ -19,28 +19,28 @@ int main() {
 
     // textures
     sf::Texture pTex, oTex, texBtnReplay, texBtnQuit, skyTex, operaTex, roadTex, bTex1, bTex2, bTex3, tArc, tGalerie, tNotreDame, tMoulin, texSettings, texScoreIcon;
-    pTex.loadFromFile("./assets/player_lvl1_pink.png");
-    oTex.loadFromFile("./assets/obstacle.png");
-    texBtnReplay.loadFromFile("./assets/REPLAY.png");
-    texBtnQuit.loadFromFile("./assets/QUIT.png");
-    skyTex.loadFromFile("./assets/bg_sky.png");
-    operaTex.loadFromFile("./assets/opéra.png");
-    roadTex.loadFromFile("./assets/roof_ground.png");
-    bTex1.loadFromFile("./assets/building1.png");
-    bTex2.loadFromFile("./assets/building2.png");
-    bTex3.loadFromFile("./assets/building3.png");
-    tArc.loadFromFile("./assets/arc_de_triomphe.png");
-    tGalerie.loadFromFile("./assets/galeries_lafayette.png");
-    tNotreDame.loadFromFile("./assets/notre_dame.png");
-    tMoulin.loadFromFile("./assets/moulin_rouge.png");
-    texSettings.loadFromFile("./assets/settings_icon.png");
-    texScoreIcon.loadFromFile("./assets/score_icon.png");
+    pTex.loadFromFile("./assets/img/player_lvl1_pink.png");
+    oTex.loadFromFile("./assets/img/obstacle.png");
+    texBtnReplay.loadFromFile("./assets/img/REPLAY.png");
+    texBtnQuit.loadFromFile("./assets/img/QUIT.png");
+    skyTex.loadFromFile("./assets/img/bg_sky.png");
+    operaTex.loadFromFile("./assets/img/opéra.png");
+    roadTex.loadFromFile("./assets/img/roof_ground.png");
+    bTex1.loadFromFile("./assets/img/building1.png");
+    bTex2.loadFromFile("./assets/img/building2.png");
+    bTex3.loadFromFile("./assets/img/building3.png");
+    tArc.loadFromFile("./assets/img/arc_de_triomphe.png");
+    tGalerie.loadFromFile("./assets/img/galeries_lafayette.png");
+    tNotreDame.loadFromFile("./assets/img/notre_dame.png");
+    tMoulin.loadFromFile("./assets/img/moulin_rouge.png");
+    texSettings.loadFromFile("./assets/img/settings_icon.png");
+    texScoreIcon.loadFromFile("./assets/img/score_icon.png");
 
     // audio
     sf::Music levelMusic, gameOverMusic;
-    levelMusic.openFromFile("./assets/level_theme.ogg");
+    levelMusic.openFromFile("./assets/audio/level_theme.ogg");
     levelMusic.setLooping(true);
-    gameOverMusic.openFromFile("./assets/gameover_theme.ogg");
+    gameOverMusic.openFromFile("./assets/audio/gameover_theme.ogg");
     gameOverMusic.setLooping(true);
     levelMusic.play();
 
@@ -68,18 +68,20 @@ int main() {
     spriteSettings.setScale({0.35f, 0.35f});
     spriteSettings.setPosition({WINDOW_WIDTH - 80.f, 30.f});
 
-    // 1. MENU DEROULANT (sous la roue)
+    // menu deroulant settings
     sf::RectangleShape settingsBg({160.f, 120.f});
     settingsBg.setFillColor(sf::Color(50, 50, 50, 230));
     settingsBg.setPosition({WINDOW_WIDTH - 180.f, 85.f});
 
-    sf::Text txtQuit(font, "Quit", 22), txtRestart(font, "Restart", 22), txtOpenSettings(font, "Settings", 22);
+    sf::Text txtQuit(font, "Quit", 22),
+    txtRestart(font, "Restart", 22),
+    txtOpenSettings(font, "+ settings", 22);
     txtQuit.setPosition({WINDOW_WIDTH - 170.f, 95.f});
     txtRestart.setPosition({WINDOW_WIDTH - 170.f, 130.f});
     txtOpenSettings.setPosition({WINDOW_WIDTH - 170.f, 165.f});
 
-    // 2. GRAND PANEL CENTRAL
-    sf::RectangleShape bigPanel({600.f, 500.f});
+    // grand pannel settings
+    sf::RectangleShape bigPanel({600.f, 400.f});
     bigPanel.setFillColor(sf::Color(20, 20, 20, 250));
     bigPanel.setOutlineThickness(5.f);
     bigPanel.setOutlineColor(sf::Color::White);
@@ -91,7 +93,7 @@ int main() {
     sf::Text pMusic(font, "Music: ON", 30); pMusic.setPosition({320.f, 280.f});
     sf::Text pSfx(font, "SFX: ON", 30); pSfx.setPosition({320.f, 340.f});
     sf::Text pVol(font, "Volume: 100", 30); pVol.setPosition({320.f, 400.f});
-    sf::Text pClose(font, "X", 25); pClose.setPosition({WINDOW_WIDTH/2.f + 160.f, 170.f});
+    sf::Text pClose(font, "X", 25); pClose.setPosition({WINDOW_WIDTH/2.f + 260.f, 170.f});
     pClose.setFillColor(sf::Color::Red);
 
     // Game Over
