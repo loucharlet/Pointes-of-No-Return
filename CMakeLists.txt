@@ -20,6 +20,7 @@ add_executable(Pointes_of_No_Return
         src/Obstacle.cpp
         include/Obstacle.h
         include/GameOverUI.h
+        include/Collectible.h
 )
 
 target_link_libraries(Pointes_of_No_Return sfml-graphics sfml-window sfml-system sfml-audio)

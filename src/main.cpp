@@ -10,6 +10,7 @@
 #include "Decor.h"
 #include "Road.h"
 #include "Obstacle.h"
+#include "Collectible.h"
 #include "SideBuilding.h"
 #include "GameOverUI.h"
 
@@ -36,6 +37,12 @@ int main() {
     texSettings.loadFromFile("./assets/img/settings_icon.png");
     texScoreIcon.loadFromFile("./assets/img/score_icon.png");
 
+    sf::Texture collTex1, collTex2, collTex3, collTex4;
+    collTex1.loadFromFile("./assets/img/coll1.png");
+    collTex2.loadFromFile("./assets/img/coll2.png");
+    collTex3.loadFromFile("./assets/img/coll3.png");
+    collTex4.loadFromFile("./assets/img/coll4.png");
+
     // audio
     sf::Music levelMusic, gameOverMusic;
     levelMusic.openFromFile("./assets/audio/level_theme.ogg");
@@ -44,12 +51,12 @@ int main() {
     gameOverMusic.setLooping(true);
     levelMusic.play();
 
-    sf::SoundBuffer bufJump, bufDeath, bufStart;
-    bufJump.loadFromFile("./assets/audio/collectibles.ogg");
+    sf::SoundBuffer bufCollec, bufDeath, bufStart;
+    bufCollec.loadFromFile("./assets/audio/collectibles.ogg");
     bufDeath.loadFromFile("./assets/audio/death.ogg");
     bufStart.loadFromFile("./assets/audio/gamestart.ogg");
 
-    sf::Sound sfxJump(bufJump), sfxDeath(bufDeath), sfxStart(bufStart);
+    sf::Sound sfxCollec(bufCollec), sfxDeath(bufDeath), sfxStart(bufStart);
 
     // init objets
     std::vector<const sf::Texture*> texVariations = {&bTex1, &bTex2, &bTex3};
@@ -103,14 +110,21 @@ int main() {
     sQuit.setPosition({560.f, 400.f});
 
     // Logic vars
+    std::vector<sf::Texture*> collectibleTextures = {&collTex1, &collTex2, &collTex3, &collTex4};
+    std::vector<std::unique_ptr<Collectible>> collectibles;
     std::vector<std::unique_ptr<Obstacle>> obstacles;
-    sf::Clock animClock, spawnTimer, deathTimer;
+    sf::Clock animClock, spawnTimer, deathTimer, collectibleTimer;
     GameState state = GameState::PLAYING;
     bool showSettingsMenu = false;
     bool showSettingsPanel = false;
     float volume = 100.f;
     bool musicOn = true;
     bool sfxOn = true;
+    int totalCollectiblesSpawned = 0;
+    int score = 0;
+    //coll+obs logic timer
+    bool collectiblePending = false; // pour savoir si un item attend de spawner
+    int pendingLane = 0; // la lane où l'item doit aller
 
     while (window.isOpen()) {
         float dt = animClock.restart().asSeconds();
@@ -141,12 +155,12 @@ int main() {
                 }
                 else if (showSettingsMenu) {
                     if (txtOpenSettings.getGlobalBounds().contains(mPos)) { showSettingsPanel = true; showSettingsMenu = false; }
-                    else if (txtRestart.getGlobalBounds().contains(mPos)) { state = GameState::PLAYING; ballerine.reset(); decor.reset(); obstacles.clear(); ui.reset(); showSettingsMenu = false; }
+                    else if (txtRestart.getGlobalBounds().contains(mPos)) { state = GameState::PLAYING; ballerine.reset(); decor.reset(); obstacles.clear(); collectibles.clear(); totalCollectiblesSpawned = 0; ui.reset(); showSettingsMenu = false; }
                     else if (txtQuit.getGlobalBounds().contains(mPos)) window.close();
                     else if (spriteSettings.getGlobalBounds().contains(mPos)) showSettingsMenu = false;
                 }
                 else if (state == GameState::GAMEOVER_MENU) {
-                    if (sReplay.getGlobalBounds().contains(mPos)) { state = GameState::PLAYING; ballerine.reset(); decor.reset(); obstacles.clear(); ui.reset(); gameOverMusic.stop(); if(musicOn) levelMusic.play(); }
+                    if (sReplay.getGlobalBounds().contains(mPos)) { state = GameState::PLAYING; ballerine.reset(); decor.reset(); obstacles.clear(); collectibles.clear(); totalCollectiblesSpawned = 0; ui.reset(); gameOverMusic.stop(); if(musicOn) levelMusic.play(); }
                     if (sQuit.getGlobalBounds().contains(mPos)) window.close();
                 }
                 else if (spriteSettings.getGlobalBounds().contains(mPos)) {
@@ -160,7 +174,6 @@ int main() {
                     if (kp->code == sf::Keyboard::Key::Right && ballerine.lane < 2) ballerine.changeLane(ballerine.lane + 1);
                     if (kp->code == sf::Keyboard::Key::Space) {
                         ballerine.jump();
-                        if (sfxOn) sfxJump.play();
                     }
                 }
             }
@@ -170,11 +183,33 @@ int main() {
             ballerine.update(gameDt);
             decor.update(gameDt, state);
             route.update(gameSpeed);
-            scoreText.setString(std::to_string((int)(decor.timer * 100)));
-            if (spawnTimer.getElapsedTime().asSeconds() > 1.8f) {
+
+            //score :Timer + pt bonus
+            scoreText.setString(std::to_string((int)(decor.timer * 100) + score));
+
+            // SPAWN OBSTACLES (chaque 2.5s)
+            if (spawnTimer.getElapsedTime().asSeconds() > 2.5f) {
                 obstacles.push_back(std::make_unique<Obstacle>(oTex));
+
+                // collectibles qui arrive
+                if (totalCollectiblesSpawned < 20) {
+                    collectiblePending = true;
+                    collectibleTimer.restart();
+                    //random lane
+                    pendingLane = rand() % 3;
+                }
                 spawnTimer.restart();
             }
+
+            // SPAWN COLLECTIBLES 1.2s après l'obstacle
+            if (collectiblePending && collectibleTimer.getElapsedTime().asSeconds() > 1.2f) {
+                int randType = rand() % 4;
+                collectibles.push_back(std::make_unique<Collectible>(*collectibleTextures[randType], pendingLane));
+                totalCollectiblesSpawned++;
+                collectiblePending = false;
+            }
+
+            //logic Obstacles
             for (auto it = obstacles.begin(); it != obstacles.end();) {
                 if ((*it)->update(gameSpeed)) it = obstacles.erase(it);
                 else {
@@ -189,10 +224,26 @@ int main() {
                     ++it;
                 }
             }
-        } else if (state == GameState::BALLERINE_FALLING) {
+
+            // logic Collectibles
+            for (auto it = collectibles.begin(); it != collectibles.end();) {
+                if ((*it)->update(gameSpeed)) it = collectibles.erase(it);
+                else {
+                    if ((*it)->lane == ballerine.lane && (*it)->progress > 0.7f && (*it)->progress < 0.9f) {
+                        if (sfxOn) sfxCollec.play();
+                        score += 50; //bonus 50 pts par item
+                        it = collectibles.erase(it);
+                    } else {
+                        ++it;
+                    }
+                }
+            }
+        }
+        else if (state == GameState::BALLERINE_FALLING) {
             ballerine.update(dt);
             if (deathTimer.getElapsedTime().asSeconds() > 2.0f) state = GameState::FADING_TO_GAMEOVER;
-        } else if (state == GameState::FADING_TO_GAMEOVER) {
+        }
+        else if (state == GameState::FADING_TO_GAMEOVER) {
             ui.updateFade(dt, true);
             if (ui.blackScreen.getFillColor().a >= 254) state = GameState::GAMEOVER_MENU;
         }
@@ -201,6 +252,7 @@ int main() {
         decor.draw(window);
         route.draw(window);
         for (auto& o : obstacles) window.draw(o->sprite);
+        for (auto& c : collectibles) window.draw(c->sprite);
         window.draw(ballerine.sprite);
         window.draw(spriteScoreIcon);
         window.draw(scoreText);
