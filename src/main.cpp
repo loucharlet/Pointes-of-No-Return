@@ -19,12 +19,13 @@ int main() {
     window.setFramerateLimit(60);
 
     // textures
-    sf::Texture pTex, oTex, texBtnReplay, texBtnQuit, skyTex, operaTex, roadTex, bTex1, bTex2, bTex3, tArc, tGalerie, tNotreDame, tMoulin, texSettings, texScoreIcon;
+    sf::Texture pTex, oTex, texBtnReplay, texBtnQuit, skyTex, operaTex, roadTex, bTex1, bTex2, bTex3, tArc, tGalerie, tNotreDame, tMoulin, texSettings, texScoreIcon, texSettingsbg, texClouds;
     pTex.loadFromFile("./assets/img/player_lvl1_pink.png");
     oTex.loadFromFile("./assets/img/obstacle.png");
     texBtnReplay.loadFromFile("./assets/img/REPLAY.png");
     texBtnQuit.loadFromFile("./assets/img/QUIT.png");
     skyTex.loadFromFile("./assets/img/bg_sky.png");
+    texClouds.loadFromFile("./assets/img/clouds.png");
     operaTex.loadFromFile("./assets/img/opéra.png");
     roadTex.loadFromFile("./assets/img/roof_ground.png");
     bTex1.loadFromFile("./assets/img/building1.png");
@@ -36,6 +37,8 @@ int main() {
     tMoulin.loadFromFile("./assets/img/moulin_rouge.png");
     texSettings.loadFromFile("./assets/img/settings_icon.png");
     texScoreIcon.loadFromFile("./assets/img/score_icon.png");
+    texSettingsbg.loadFromFile("./assets/img/settingsbg.png");
+
 
     sf::Texture collTex1, collTex2, collTex3, collTex4;
     collTex1.loadFromFile("./assets/img/coll1.png");
@@ -60,7 +63,7 @@ int main() {
 
     // init objets
     std::vector<const sf::Texture*> texVariations = {&bTex1, &bTex2, &bTex3};
-    Decor decor(skyTex, operaTex, texVariations, tArc, tGalerie, tNotreDame, tMoulin);
+    Decor decor(skyTex, operaTex, texVariations, tArc, tGalerie, tNotreDame, tMoulin, texClouds);
     Player ballerine(pTex);
     Road route(roadTex);
     GameOverUI ui;
@@ -72,6 +75,8 @@ int main() {
     // UI
     sf::Text scoreText(font, "0", 25);
     scoreText.setFillColor(sf::Color::Black);
+    scoreText.setOutlineColor(sf::Color::White);
+    scoreText.setOutlineThickness(2.f);
     scoreText.setPosition({150.f, 44.f});
     sf::Sprite spriteScoreIcon(texScoreIcon);
     spriteScoreIcon.setScale({0.57f, 0.57f});
@@ -81,9 +86,9 @@ int main() {
     spriteSettings.setPosition({WINDOW_WIDTH - 80.f, 30.f});
 
     // Menus
-    sf::RectangleShape settingsBg({160.f, 120.f});
-    settingsBg.setFillColor(sf::Color(50, 50, 50, 230));
-    settingsBg.setPosition({WINDOW_WIDTH - 180.f, 85.f});
+    sf::RectangleShape settingslil({160.f, 120.f});
+    settingslil.setFillColor(sf::Color::Black);
+    settingslil.setPosition({WINDOW_WIDTH - 180.f, 85.f});
 
     sf::Text txtQuit(font, "Quit", 22), txtRestart(font, "Restart", 22), txtOpenSettings(font, "+ settings", 22);
     txtQuit.setPosition({WINDOW_WIDTH - 170.f, 95.f});
@@ -91,19 +96,30 @@ int main() {
     txtOpenSettings.setPosition({WINDOW_WIDTH - 170.f, 165.f});
 
     sf::RectangleShape bigPanel({600.f, 500.f});
-    bigPanel.setFillColor(sf::Color(20, 20, 20, 250));
+    bigPanel.setTexture(&texSettingsbg);
     bigPanel.setOutlineThickness(5.f);
-    bigPanel.setOutlineColor(sf::Color::White);
+    bigPanel.setOutlineColor(sf::Color::Black);
     bigPanel.setOrigin({300.f, 250.f});
     bigPanel.setPosition({WINDOW_WIDTH / 2.f, WINDOW_HEIGHT / 2.f});
 
     sf::Text pTitle(font, "SETTINGS", 45);
     pTitle.setPosition({WINDOW_WIDTH/2.f - 100.f, 180.f});
-    sf::Text pMusic(font, "Music: ON", 30); pMusic.setPosition({320.f, 280.f});
-    sf::Text pSfx(font, "SFX: ON", 30); pSfx.setPosition({320.f, 340.f});
-    sf::Text pVol(font, "Volume: 100", 30); pVol.setPosition({320.f, 400.f});
-    sf::Text pClose(font, "X", 25); pClose.setPosition({WINDOW_WIDTH/2.f + 260.f, 170.f});
+    sf::Text pMusic(font, "Music: ON", 30); pMusic.setPosition({WINDOW_WIDTH/2.f - 100.f, 280.f});
+    sf::Text pSfx(font, "SFX: ON", 30); pSfx.setPosition({WINDOW_WIDTH/2.f - 100.f, 340.f});
+    sf::Text pVol(font, "Volume: 100", 30); pVol.setPosition({WINDOW_WIDTH/2.f - 100.f, 400.f});
+    sf::Text pClose(font, "X", 25); pClose.setPosition({WINDOW_WIDTH/2.f + 270.f, 160.f});
     pClose.setFillColor(sf::Color::Red);
+    pTitle.setOutlineColor(sf::Color::Black);
+    pTitle.setOutlineThickness(3.f);
+
+    pMusic.setOutlineColor(sf::Color::Black);
+    pMusic.setOutlineThickness(3.f);
+
+    pSfx.setOutlineColor(sf::Color::Black);
+    pSfx.setOutlineThickness(3.f);
+
+    pVol.setOutlineColor(sf::Color::Black);
+    pVol.setOutlineThickness(3.f);
 
     sf::Sprite sReplay(texBtnReplay), sQuit(texBtnQuit);
     sReplay.setPosition({260.f, 400.f});
@@ -259,7 +275,7 @@ int main() {
         window.draw(spriteSettings);
 
         if (showSettingsMenu) {
-            window.draw(settingsBg);
+            window.draw(settingslil);
             window.draw(txtQuit);
             window.draw(txtRestart);
             window.draw(txtOpenSettings);
