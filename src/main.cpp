@@ -19,7 +19,7 @@ int main() {
     window.setFramerateLimit(60);
 
     // textures
-    sf::Texture pTex, oTex, texBtnReplay, texBtnQuit, skyTex, operaTex, roadTex, bTex1, bTex2, bTex3, tArc, tGalerie, tNotreDame, tMoulin, texSettings, texScoreIcon, texSettingsbg, texClouds;
+    sf::Texture pTex, oTex, texBtnReplay, texBtnQuit, skyTex, operaTex, roadTex, bTex1, bTex2, bTex3, tArc, tGalerie, tNotreDame, tMoulin, texSettings, texScoreIcon, texSettingsbg, texClouds, tLogo;
     pTex.loadFromFile("./assets/img/player_lvl1_pink.png");
     oTex.loadFromFile("./assets/img/obstacle.png");
     texBtnReplay.loadFromFile("./assets/img/REPLAY.png");
@@ -38,6 +38,8 @@ int main() {
     texSettings.loadFromFile("./assets/img/settings_icon.png");
     texScoreIcon.loadFromFile("./assets/img/score_icon.png");
     texSettingsbg.loadFromFile("./assets/img/settingsbg.png");
+    tLogo.loadFromFile("./assets/img/logo.png");
+
 
 
     sf::Texture collTex1, collTex2, collTex3, collTex4;
@@ -85,6 +87,10 @@ int main() {
     spriteSettings.setScale({0.35f, 0.35f});
     spriteSettings.setPosition({WINDOW_WIDTH - 80.f, 30.f});
 
+    sf::Sprite spriteLogo(tLogo);
+    spriteLogo.setScale({0.075f, 0.075f});
+    spriteLogo.setPosition({WINDOW_WIDTH - 240.f, 610.f});
+
     // Menus
     sf::RectangleShape settingslil({160.f, 120.f});
     settingslil.setFillColor(sf::Color::Black);
@@ -100,14 +106,14 @@ int main() {
     bigPanel.setOutlineThickness(5.f);
     bigPanel.setOutlineColor(sf::Color::Black);
     bigPanel.setOrigin({300.f, 250.f});
-    bigPanel.setPosition({WINDOW_WIDTH / 2.f, WINDOW_HEIGHT / 2.f});
+    bigPanel.setPosition({WINDOW_WIDTH / 2.f, WINDOW_HEIGHT / 2.f - 60.f});
 
     sf::Text pTitle(font, "SETTINGS", 45);
-    pTitle.setPosition({WINDOW_WIDTH/2.f - 100.f, 180.f});
+    pTitle.setPosition({WINDOW_WIDTH/2.f - 100.f, 175.f});
     sf::Text pMusic(font, "Music: ON", 30); pMusic.setPosition({WINDOW_WIDTH/2.f - 100.f, 280.f});
     sf::Text pSfx(font, "SFX: ON", 30); pSfx.setPosition({WINDOW_WIDTH/2.f - 100.f, 340.f});
     sf::Text pVol(font, "Volume: 100", 30); pVol.setPosition({WINDOW_WIDTH/2.f - 100.f, 400.f});
-    sf::Text pClose(font, "X", 25); pClose.setPosition({WINDOW_WIDTH/2.f + 270.f, 160.f});
+    sf::Text pClose(font, "X", 25); pClose.setPosition({WINDOW_WIDTH/2.f + 270.f, 100.f});
     pClose.setFillColor(sf::Color::Red);
     pTitle.setOutlineColor(sf::Color::Black);
     pTitle.setOutlineThickness(3.f);
@@ -121,9 +127,10 @@ int main() {
     pVol.setOutlineColor(sf::Color::Black);
     pVol.setOutlineThickness(3.f);
 
-    sf::Sprite sReplay(texBtnReplay), sQuit(texBtnQuit);
-    sReplay.setPosition({260.f, 400.f});
-    sQuit.setPosition({560.f, 400.f});
+    sf::Sprite sReplay(texBtnReplay), sQuit(texBtnQuit), sLogo(tLogo);
+    sReplay.setPosition({250.f, 400.f});
+    sQuit.setPosition({550.f, 400.f});
+
 
     // Logic vars
     std::vector<sf::Texture*> collectibleTextures = {&collTex1, &collTex2, &collTex3, &collTex4};
@@ -273,6 +280,7 @@ int main() {
         window.draw(spriteScoreIcon);
         window.draw(scoreText);
         window.draw(spriteSettings);
+        window.draw(spriteLogo);
 
         if (showSettingsMenu) {
             window.draw(settingslil);
