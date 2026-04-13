@@ -3,8 +3,9 @@
 Decor::Decor(const sf::Texture& tSky, const sf::Texture& tOpera,
              const std::vector<const sf::Texture*>& tBuildings,
              const sf::Texture& tArc, const sf::Texture& tGalerie,
-             const sf::Texture& tNotreDame, const sf::Texture& tMoulin)
-    : sky(tSky), opera(tOpera), buildingTextures(tBuildings) {
+             const sf::Texture& tNotreDame, const sf::Texture& tMoulin,
+             const sf::Texture& texClouds)
+    : sky(tSky), opera(tOpera), buildingTextures(tBuildings), clouds(texClouds) {
 
     specialTimeline.push_back({0.15f, &tArc, false});
     specialTimeline.push_back({0.35f, &tGalerie, false});
@@ -16,6 +17,8 @@ Decor::Decor(const sf::Texture& tSky, const sf::Texture& tOpera,
     opera.setOrigin({bOpera.size.x / 2.f, bOpera.size.y / 2.f});
     opera.setPosition({500.f, HORIZON_Y + 50.f});
     opera.setScale({0.1f, 0.1f});
+    clouds.setPosition({500.f, 5.f});
+    clouds.setScale({1.7f, 1.7f});
     spawnInitialBuildings();
 }
 
@@ -37,6 +40,9 @@ void Decor::update(float dt, GameState state) {
         float opS = 0.1f + (pLevel * 0.3f);
         opera.setScale({opS, opS});
         opera.setPosition({500.f, (HORIZON_Y + 35.f) - (pLevel * 200.f)});
+        clouds.setPosition({(pLevel * 700.f), 5.f});
+
+
 
         SpecialEvent* currentEv = nullptr;
         bool monL = false, monR = false;
@@ -84,7 +90,10 @@ void Decor::reset() {
 
 void Decor::draw(sf::RenderWindow& window) {
     window.draw(sky);
+    window.draw(clouds);
     window.draw(opera);
+
+
     for (auto it = buildings.rbegin(); it != buildings.rend(); ++it) {
         window.draw((*it)->sprite);
     }

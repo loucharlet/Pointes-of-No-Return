@@ -18,6 +18,7 @@ class Decor {
 public:
     sf::Sprite sky;
     sf::Sprite opera;
+    sf::Sprite clouds;
     std::vector<const sf::Texture*> buildingTextures;
     std::vector<std::unique_ptr<SideBuilding>> buildings;
     float timer = 0.f;
@@ -25,10 +26,12 @@ public:
     std::vector<SpecialEvent> specialTimeline;
     sf::Clock clockL, clockR;
 
+
     Decor(const sf::Texture& tSky, const sf::Texture& tOpera,
           const std::vector<const sf::Texture*>& tBuildings,
           const sf::Texture& tArc, const sf::Texture& tGalerie,
-          const sf::Texture& tNotreDame, const sf::Texture& tMoulin);
+          const sf::Texture& tNotreDame, const sf::Texture& tMoulin,
+          const sf::Texture& texClouds);
 
     void spawnInitialBuildings();
     void update(float dt, GameState state);

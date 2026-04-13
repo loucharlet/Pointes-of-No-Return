@@ -7,6 +7,7 @@
 #include <SFML/Graphics.hpp>
 #include <memory>
 #include "Constants.h"
+#include "AssetLoader.h"
 
 class GameOverUI {
 public:
@@ -21,7 +22,7 @@ public:
     }
 
     bool load(const std::string& path) {
-        if (!tex.loadFromFile(path)) return false;
+        if (!AssetLoader::loadTexture(tex, path)) return false;
         bg = std::make_unique<sf::Sprite>(tex);
         bg->setColor(sf::Color(255, 255, 255, 0));
         return true;

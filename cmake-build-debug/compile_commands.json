@@ -34,5 +34,53 @@
   "command": "/usr/bin/c++ -I/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/include -I/opt/homebrew/include -g -std=gnu++20 -arch arm64 -fcolor-diagnostics -o CMakeFiles/Pointes_of_No_Return.dir/src/Obstacle.cpp.o -c /Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/src/Obstacle.cpp",
   "file": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/src/Obstacle.cpp",
   "output": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/cmake-build-debug/CMakeFiles/Pointes_of_No_Return.dir/src/Obstacle.cpp.o"
+},
+{
+  "directory": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/cmake-build-debug",
+  "command": "/usr/bin/c++ -I/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/include -I/opt/homebrew/include -g -std=gnu++20 -arch arm64 -fcolor-diagnostics -o CMakeFiles/Pointes_of_No_Return.dir/src/SaveManager.cpp.o -c /Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/src/SaveManager.cpp",
+  "file": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/src/SaveManager.cpp",
+  "output": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/cmake-build-debug/CMakeFiles/Pointes_of_No_Return.dir/src/SaveManager.cpp.o"
+},
+{
+  "directory": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/cmake-build-debug",
+  "command": "/usr/bin/c++ -I/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/include -I/opt/homebrew/include -g -std=gnu++20 -arch arm64 -fcolor-diagnostics -o CMakeFiles/Pointes_of_No_Return.dir/src/SceneManager.cpp.o -c /Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/src/SceneManager.cpp",
+  "file": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/src/SceneManager.cpp",
+  "output": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/cmake-build-debug/CMakeFiles/Pointes_of_No_Return.dir/src/SceneManager.cpp.o"
+},
+{
+  "directory": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/cmake-build-debug",
+  "command": "/usr/bin/c++ -I/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/include -I/opt/homebrew/include -g -std=gnu++20 -arch arm64 -fcolor-diagnostics -o CMakeFiles/Pointes_of_No_Return.dir/src/GameplayState.cpp.o -c /Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/src/GameplayState.cpp",
+  "file": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/src/GameplayState.cpp",
+  "output": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/cmake-build-debug/CMakeFiles/Pointes_of_No_Return.dir/src/GameplayState.cpp.o"
+},
+{
+  "directory": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/cmake-build-debug",
+  "command": "/usr/bin/c++ -I/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/include -I/opt/homebrew/include -g -std=gnu++20 -arch arm64 -fcolor-diagnostics -o CMakeFiles/Pointes_of_No_Return.dir/src/LevelSelectState.cpp.o -c /Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/src/LevelSelectState.cpp",
+  "file": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/src/LevelSelectState.cpp",
+  "output": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/cmake-build-debug/CMakeFiles/Pointes_of_No_Return.dir/src/LevelSelectState.cpp.o"
+},
+{
+  "directory": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/cmake-build-debug",
+  "command": "/usr/bin/c++ -I/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/include -I/opt/homebrew/include -g -std=gnu++20 -arch arm64 -fcolor-diagnostics -o CMakeFiles/Pointes_of_No_Return.dir/src/Menu1State.cpp.o -c /Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/src/Menu1State.cpp",
+  "file": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/src/Menu1State.cpp",
+  "output": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/cmake-build-debug/CMakeFiles/Pointes_of_No_Return.dir/src/Menu1State.cpp.o"
+},
+{
+  "directory": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/cmake-build-debug",
+  "command": "/usr/bin/c++ -I/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/include -I/opt/homebrew/include -g -std=gnu++20 -arch arm64 -fcolor-diagnostics -o CMakeFiles/Pointes_of_No_Return.dir/src/Menu2State.cpp.o -c /Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/src/Menu2State.cpp",
+  "file": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/src/Menu2State.cpp",
+  "output": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/cmake-build-debug/CMakeFiles/Pointes_of_No_Return.dir/src/Menu2State.cpp.o"
+},
+{
+  "directory": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/cmake-build-debug",
+  "command": "/usr/bin/c++ -I/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/include -I/opt/homebrew/include -g -std=gnu++20 -arch arm64 -fcolor-diagnostics -o CMakeFiles/Pointes_of_No_Return.dir/src/DressingState.cpp.o -c /Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/src/DressingState.cpp",
+  "file": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/src/DressingState.cpp",
+  "output": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/cmake-build-debug/CMakeFiles/Pointes_of_No_Return.dir/src/DressingState.cpp.o"
+},
+{
+  "directory": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/cmake-build-debug",
+  "command": "/usr/bin/c++ -I/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/include -I/opt/homebrew/include -g -std=gnu++20 -arch arm64 -fcolor-diagnostics -o CMakeFiles/Pointes_of_No_Return.dir/src/RulesState.cpp.o -c /Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/src/RulesState.cpp",
+  "file": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/src/RulesState.cpp",
+  "output": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/cmake-build-debug/CMakeFiles/Pointes_of_No_Return.dir/src/RulesState.cpp.o"
 }
 ]
