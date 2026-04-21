@@ -8,6 +8,7 @@
 #include "SideBuilding.h"
 #include "GameOverUI.h"
 #include "Menu2State.h"
+#include "AppSettings.h"
 #include <iostream>
 
 struct Popup {
@@ -36,9 +37,7 @@ GameplayState::GameplayState(SceneManager* scenes_, int levelId_, const Save& sa
     AssetLoader::loadTexture(tGalerie, "galeries_lafayette.png");
     AssetLoader::loadTexture(tNotreDame, "notre_dame.png");
     AssetLoader::loadTexture(tMoulin, "moulin_rouge.png");
-    AssetLoader::loadTexture(texSettings, "settings_icon.png");
     AssetLoader::loadTexture(texScoreIcon, "score_icon.png");
-    AssetLoader::loadTexture(texSettingsbg, "settingsbg.png");
     AssetLoader::loadTexture(tLogo, "logo.png");
     AssetLoader::loadTexture(tFullInventory, "inventaireFull.png");
     AssetLoader::loadTexture(tFullInventoryBack, "inventaireFullBack.png");
@@ -57,7 +56,9 @@ GameplayState::GameplayState(SceneManager* scenes_, int levelId_, const Save& sa
     levelMusic.setLooping(true);
     gameOverMusic.openFromFile("./assets/audio/gameover_theme.ogg");
     gameOverMusic.setLooping(true);
-    levelMusic.play();
+    levelMusic.setVolume(AppSettings::volume);
+    gameOverMusic.setVolume(AppSettings::volume);
+    if (AppSettings::musicOn) levelMusic.play();
 
     bufCollec.loadFromFile("./assets/audio/collectibles.ogg");
     bufDeath.loadFromFile("./assets/audio/death.ogg");
@@ -74,6 +75,23 @@ GameplayState::GameplayState(SceneManager* scenes_, int levelId_, const Save& sa
     ui->load("gameover.png");
 
     AssetLoader::loadFont(font, "police_futura.ttf");
+    settingsUI.init(font);
+    settingsUI.setGameActionsEnabled(true);
+    settingsUI.setAudioHooks(
+        [&](bool musicOn) {
+            if (musicOn) {
+                if (state == GameState::PLAYING) levelMusic.play();
+                else if (state == GameState::FADING_TO_GAMEOVER || state == GameState::GAMEOVER_MENU) gameOverMusic.play();
+            } else {
+                levelMusic.pause();
+                gameOverMusic.pause();
+            }
+        },
+        [&](float vol) {
+            levelMusic.setVolume(vol);
+            gameOverMusic.setVolume(vol);
+        }
+    );
     // construct texts after font is loaded
     scoreText = std::make_unique<sf::Text>(font, "0", 25);
     scoreText->setFillColor(sf::Color::Black);
@@ -84,10 +102,6 @@ GameplayState::GameplayState(SceneManager* scenes_, int levelId_, const Save& sa
     spriteScoreIcon = std::make_unique<sf::Sprite>(texScoreIcon);
     spriteScoreIcon->setScale({0.57f, 0.57f});
     spriteScoreIcon->setPosition({17.f, 20.f});
-
-    spriteSettings = std::make_unique<sf::Sprite>(texSettings);
-    spriteSettings->setScale({0.35f, 0.35f});
-    spriteSettings->setPosition({WINDOW_WIDTH - 80.f, 30.f});
 
     spriteLogo = std::make_unique<sf::Sprite>(tLogo);
     spriteLogo->setScale({0.075f, 0.075f});
@@ -100,41 +114,6 @@ GameplayState::GameplayState(SceneManager* scenes_, int levelId_, const Save& sa
     spriteFullIventoryBack = std::make_unique<sf::Sprite>(tFullInventoryBack);
     spriteFullIventoryBack->setScale({0.13f, 0.13f});
     spriteFullIventoryBack->setPosition({WINDOW_WIDTH - 250.f, 480.f});
-
-    settingslil = sf::RectangleShape({160.f, 120.f});
-    settingslil.setFillColor(sf::Color::Black);
-    settingslil.setPosition({WINDOW_WIDTH - 180.f, 85.f});
-
-    txtQuit = std::make_unique<sf::Text>(font, "Quit", 22);
-    txtRestart = std::make_unique<sf::Text>(font, "Restart", 22);
-    txtOpenSettings = std::make_unique<sf::Text>(font, "+ settings", 22);
-    txtQuit->setPosition({WINDOW_WIDTH - 170.f, 95.f});
-    txtRestart->setPosition({WINDOW_WIDTH - 170.f, 130.f});
-    txtOpenSettings->setPosition({WINDOW_WIDTH - 170.f, 165.f});
-
-    bigPanel = sf::RectangleShape({600.f, 500.f});
-    bigPanel.setTexture(&texSettingsbg);
-    bigPanel.setOutlineThickness(5.f);
-    bigPanel.setOutlineColor(sf::Color::Black);
-    bigPanel.setOrigin({300.f, 250.f});
-    bigPanel.setPosition({WINDOW_WIDTH / 2.f, WINDOW_HEIGHT / 2.f - 60.f});
-
-    pTitle = std::make_unique<sf::Text>(font, "SETTINGS", 45);
-    pMusic = std::make_unique<sf::Text>(font, "Music: ON", 30);
-    pSfx = std::make_unique<sf::Text>(font, "SFX: ON", 30);
-    pVol = std::make_unique<sf::Text>(font, "Volume: 100", 30);
-    pClose = std::make_unique<sf::Text>(font, "X", 25);
-    pTitle->setPosition({WINDOW_WIDTH/2.f - 100.f, 175.f});
-    pMusic->setPosition({WINDOW_WIDTH/2.f - 100.f, 280.f});
-    pSfx->setPosition({WINDOW_WIDTH/2.f - 100.f, 340.f});
-    pVol->setPosition({WINDOW_WIDTH/2.f - 100.f, 400.f});
-    pClose->setPosition({WINDOW_WIDTH/2.f + 270.f, 100.f}); pClose->setFillColor(sf::Color::Red);
-
-    pTitle->setOutlineColor(sf::Color::Black);
-    pTitle->setOutlineThickness(3.f);
-    pMusic->setOutlineColor(sf::Color::Black); pMusic->setOutlineThickness(3.f);
-    pSfx->setOutlineColor(sf::Color::Black); pSfx->setOutlineThickness(3.f);
-    pVol->setOutlineColor(sf::Color::Black); pVol->setOutlineThickness(3.f);
 
     sReplay = std::make_unique<sf::Sprite>(texBtnReplay); sQuit = std::make_unique<sf::Sprite>(texBtnQuit);
     sReplay->setPosition({250.f, 400.f}); sQuit->setPosition({550.f, 400.f});
@@ -164,53 +143,28 @@ void GameplayState::handleEvent(const std::optional<sf::Event>& event, sf::Rende
     if (const auto* mbp = event->getIf<sf::Event::MouseButtonPressed>()) {
         sf::Vector2f mPos = window.mapPixelToCoords(mbp->position);
 
-        if (showSettingsPanel) {
-            if (pClose && pClose->getGlobalBounds().contains(mPos)) {
-                showSettingsPanel = false;
-            }
-            if (pMusic && pMusic->getGlobalBounds().contains(mPos)) {
-                musicOn = !musicOn;
-                if (musicOn) levelMusic.play(); else levelMusic.pause();
-                pMusic->setString(musicOn ? "Music: ON" : "Music: OFF");
-            }
-            if (pVol && pVol->getGlobalBounds().contains(mPos)) {
-                volume = (volume >= 100.f) ? 0.f : volume + 20.f;
-                levelMusic.setVolume(volume);
-                gameOverMusic.setVolume(volume);
-                pVol->setString("Volume: " + std::to_string((int)volume));
-            }
-            if (pSfx && pSfx->getGlobalBounds().contains(mPos)) {
-                sfxOn = !sfxOn;
-                pSfx->setString(sfxOn ? "SFX: ON" : "SFX: OFF");
-            }
-        }
-        else if (showSettingsMenu) {
-            if (txtOpenSettings && txtOpenSettings->getGlobalBounds().contains(mPos)) {
-                showSettingsPanel = true;
-                showSettingsMenu = false;
-            }
-            else if (txtRestart && txtRestart->getGlobalBounds().contains(mPos)) {
-                state = GameState::PLAYING;
-                ballerine->reset();
-                decor->reset();
-                obstacles.clear();
-                collectibles.clear();
-                popups.clear();
-                totalCollectiblesSpawned = 0;
-                score = 0;
-                collectiblePending = false;
-                ui->reset();
-                gameOverMusic.stop();
-                if (musicOn) levelMusic.play();
-                showSettingsMenu = false;
-            }
-            else if (txtQuit && txtQuit->getGlobalBounds().contains(mPos)) {
-                // return to Menu2
-                if (scenes) scenes->setScene(std::make_unique<Menu2State>(scenes, saveData, slotIndex, slotPath));
-            }
-            else if (spriteSettings && spriteSettings->getGlobalBounds().contains(mPos)) {
-                showSettingsMenu = false;
-            }
+        if (settingsUI.handleClick(
+                mPos,
+                [&]() {
+                    SaveManager::save(saveData, slotPath);
+                    if (scenes) scenes->setScene(std::make_unique<Menu2State>(scenes, saveData, slotIndex, slotPath));
+                },
+                [&]() {
+                    state = GameState::PLAYING;
+                    ballerine->reset();
+                    decor->reset();
+                    obstacles.clear();
+                    collectibles.clear();
+                    popups.clear();
+                    totalCollectiblesSpawned = 0;
+                    score = 0;
+                    collectiblePending = false;
+                    ui->reset();
+                    gameOverMusic.stop();
+                    if (AppSettings::musicOn) levelMusic.play();
+                }
+            )) {
+            return;
         }
         else if (state == GameState::GAMEOVER_MENU) {
             if (sReplay && sReplay->getGlobalBounds().contains(mPos)) {
@@ -225,16 +179,13 @@ void GameplayState::handleEvent(const std::optional<sf::Event>& event, sf::Rende
                 collectiblePending = false;
                 ui->reset();
                 gameOverMusic.stop();
-                if (musicOn) levelMusic.play();
+                if (AppSettings::musicOn) levelMusic.play();
             }
             if (sQuit && sQuit->getGlobalBounds().contains(mPos)) {
                 SaveManager::save(saveData, slotPath);
                 scenes->setScene(std::make_unique<Menu2State>(scenes, saveData, slotIndex, slotPath));
             }
 
-        }
-        else if (spriteSettings->getGlobalBounds().contains(mPos)) {
-            showSettingsMenu = true;
         }
     }
 
@@ -254,7 +205,7 @@ void GameplayState::handleEvent(const std::optional<sf::Event>& event, sf::Rende
 }
 
 void GameplayState::update(float dt) {
-    float gameDt = (showSettingsMenu || showSettingsPanel || state != GameState::PLAYING) ? 0.f : dt;
+    float gameDt = (settingsUI.isOpen() || state != GameState::PLAYING) ? 0.f : dt;
 
     if (state == GameState::PLAYING && gameDt > 0.f) {
         ballerine->update(gameDt);
@@ -291,8 +242,8 @@ void GameplayState::update(float dt) {
                     ballerine->state = PlayerState::DIE;
                     deathTimer.restart();
                     levelMusic.stop();
-                    if (musicOn) gameOverMusic.play();
-                    if (sfxOn && sfxDeath) sfxDeath->play();
+                    if (AppSettings::musicOn) gameOverMusic.play();
+                    if (AppSettings::sfxOn && sfxDeath) sfxDeath->play();
                 }
                 ++it;
             }
@@ -304,7 +255,7 @@ void GameplayState::update(float dt) {
             }
             else {
                 if ((*it)->lane == ballerine->lane && (*it)->progress > 0.7f && (*it)->progress < 0.9f) {
-                    if (sfxOn && sfxCollec) sfxCollec->play();
+                    if (AppSettings::sfxOn && sfxCollec) sfxCollec->play();
                     score += 50;
                     const sf::Texture* collectedTex = &(*it)->sprite.getTexture();
                     if (collectedTex == &collTex1) {
@@ -374,14 +325,7 @@ void GameplayState::draw(sf::RenderWindow& window) {
     if (scoreText) window.draw(*scoreText);
     if (spriteFullIventoryBack) window.draw(*spriteFullIventoryBack);
     for (auto& p : popups) window.draw(p.sprite);
-    if (spriteSettings) window.draw(*spriteSettings);
     if (spriteFullIventory) window.draw(*spriteFullIventory);
-    if (showSettingsMenu) {
-        window.draw(settingslil);
-        if (txtQuit) window.draw(*txtQuit);
-        if (txtRestart) window.draw(*txtRestart);
-        if (txtOpenSettings) window.draw(*txtOpenSettings);
-    }
     if (state == GameState::FADING_TO_GAMEOVER || state == GameState::GAMEOVER_MENU) {
         if (state == GameState::GAMEOVER_MENU) ui->updateFade(0.f, false);
         window.draw(ui->blackScreen);
@@ -392,12 +336,5 @@ void GameplayState::draw(sf::RenderWindow& window) {
             if (spriteLogo) window.draw(*spriteLogo);
         }
     }
-    if (showSettingsPanel) {
-        window.draw(bigPanel);
-        if (pTitle) window.draw(*pTitle);
-        if (pMusic) window.draw(*pMusic);
-        if (pSfx) window.draw(*pSfx);
-        if (pVol) window.draw(*pVol);
-        if (pClose) window.draw(*pClose);
-    }
+    settingsUI.draw(window);
 }

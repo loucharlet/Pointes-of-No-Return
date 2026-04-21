@@ -9,6 +9,8 @@ link_directories("/opt/homebrew/lib")
 add_executable(Pointes_of_No_Return
         src/main.cpp
         include/Constants.h
+        include/AppSettings.h
+        include/SettingsUI.h
         src/Player.cpp
         include/Player.h
         src/Decor.cpp
@@ -31,11 +33,13 @@ add_executable(Pointes_of_No_Return
         include/LevelSelectState.h
         include/Menu1State.h
         include/Menu2State.h
+        include/CostumeState.h
         src/LevelSelectState.cpp
         src/Menu1State.cpp
         src/Menu2State.cpp
         src/DressingState.cpp
         src/RulesState.cpp
+        src/CostumeState.cpp
 )
 
 target_link_libraries(Pointes_of_No_Return sfml-graphics sfml-window sfml-system sfml-audio)

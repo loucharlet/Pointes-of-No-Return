@@ -4,6 +4,7 @@
 #include "Scene.h"
 #include <SFML/Graphics.hpp>
 #include "SaveManager.h"
+#include "SettingsUI.h"
 
 class SceneManager;
 
@@ -33,6 +34,8 @@ private:
     std::unique_ptr<sf::Sprite> backBtn;
     sf::Texture bgTex;
     std::unique_ptr<sf::Sprite> bg;
+
+    SettingsUI settingsUI;
 };
 
 std::unique_ptr<Scene> createLevelSelect(SceneManager* scenes, const Save* saveOverride = nullptr, int slotIndex = -1, const std::string& slotPath = "");

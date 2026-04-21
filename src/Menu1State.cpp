@@ -18,6 +18,8 @@ Menu1State::Menu1State(SceneManager* manager)
     bg->setPosition({0.f, 0.f});
 
     AssetLoader::loadFont(font, "police_futura.ttf");
+    settingsUI.init(font);
+    settingsUI.setGameActionsEnabled(false);
 
     if (AssetLoader::loadTexture(backTex, "QUIT.png")) {
         backBtn = std::make_unique<sf::Sprite>(backTex);
@@ -71,6 +73,14 @@ void Menu1State::handleEvent(const std::optional<sf::Event>& event, sf::RenderWi
     if (!event) return;
     if (const auto* mbp = event->getIf<sf::Event::MouseButtonPressed>()) {
         sf::Vector2f mPos = window.mapPixelToCoords(mbp->position);
+
+        if (settingsUI.handleClick(
+                mPos,
+                [&]() { window.close(); },
+                [&]() { scenes->setScene(std::make_unique<Menu1State>(scenes)); }
+            )) {
+            return;
+        }
 
         if (backBtn && backBtn->getGlobalBounds().contains(mPos)) {
             window.close(); // Back from first menu means exit
@@ -136,4 +146,6 @@ void Menu1State::draw(sf::RenderWindow& window) {
         // draw text label
         if (i < slotsText.size()) window.draw(slotsText[i]);
     }
+
+    settingsUI.draw(window);
 }

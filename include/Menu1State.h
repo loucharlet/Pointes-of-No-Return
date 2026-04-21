@@ -5,6 +5,7 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include "SaveManager.h"
+#include "SettingsUI.h"
 
 class SceneManager;
 
@@ -32,6 +33,7 @@ private:
     std::unique_ptr<sf::Sprite> backBtn;
     sf::Texture logoTex;
     std::unique_ptr<sf::Sprite> logo;
+    SettingsUI settingsUI;
 };
 
 #endif

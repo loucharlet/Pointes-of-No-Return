@@ -4,6 +4,8 @@
 #include "Scene.h"
 #include "Constants.h"
 #include "SaveManager.h"
+#include "AppSettings.h"
+#include "SettingsUI.h"
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
 #include <vector>
@@ -27,7 +29,7 @@ private:
     int levelId = 0; // 0=Paris, 1..4 = ballets
     SceneManager* scenes = nullptr;
     // textures & assets
-    sf::Texture pTex, oTex, texBtnReplay, texBtnQuit, skyTex, operaTex, roadTex, bTex1, bTex2, bTex3, tArc, tGalerie, tNotreDame, tMoulin, texSettings, texScoreIcon, texSettingsbg, texClouds, tLogo, tFullInventory, tFullInventoryBack;
+    sf::Texture pTex, oTex, texBtnReplay, texBtnQuit, skyTex, operaTex, roadTex, bTex1, bTex2, bTex3, tArc, tGalerie, tNotreDame, tMoulin, texScoreIcon, texClouds, tLogo, tFullInventory, tFullInventoryBack;
     sf::Texture collTex1, collTex2, collTex3, collTex4;
     sf::Texture popupTex1, popupTex2, popupTex3, popupTex4;
 
@@ -50,15 +52,10 @@ private:
     sf::Font font;
     std::unique_ptr<sf::Text> scoreText;
     std::unique_ptr<sf::Sprite> spriteScoreIcon;
-    std::unique_ptr<sf::Sprite> spriteSettings;
     std::unique_ptr<sf::Sprite> spriteLogo;
     std::unique_ptr<sf::Sprite> spriteFullIventory;
     std::unique_ptr<sf::Sprite> spriteFullIventoryBack;
-
-    sf::RectangleShape settingslil;
-    std::unique_ptr<sf::Text> txtQuit, txtRestart, txtOpenSettings;
-    sf::RectangleShape bigPanel;
-    std::unique_ptr<sf::Text> pTitle, pMusic, pSfx, pVol, pClose;
+    SettingsUI settingsUI;
     std::unique_ptr<sf::Sprite> sReplay, sQuit;
 
     // logic
@@ -67,11 +64,6 @@ private:
 
     sf::Clock spawnTimer, deathTimer, collectibleTimer;
     GameState state = GameState::PLAYING;
-    bool showSettingsMenu = false;
-    bool showSettingsPanel = false;
-    float volume = 100.f;
-    bool musicOn = true;
-    bool sfxOn = true;
     int totalCollectiblesSpawned = 0;
     int score = 0;
     Save saveData;

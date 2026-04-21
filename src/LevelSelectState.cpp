@@ -12,6 +12,8 @@ LevelSelectState::LevelSelectState(SceneManager* manager, const Save* saveOverri
     : scenes(manager), slotIndex(slotIndex_), slotPath(slotPath_)
 {
     AssetLoader::loadFont(font, "police_futura.ttf");
+    settingsUI.init(font);
+    settingsUI.setGameActionsEnabled(false);
     if (saveOverride) save = *saveOverride;
     else SaveManager::load(save);
 
@@ -63,6 +65,14 @@ void LevelSelectState::handleEvent(const std::optional<sf::Event>& event, sf::Re
     if (!event) return;
     if (const auto* mbp = event->getIf<sf::Event::MouseButtonPressed>()) {
         sf::Vector2f mPos = window.mapPixelToCoords(mbp->position);
+
+        if (settingsUI.handleClick(
+                mPos,
+                [&]() { window.close(); },
+                [&]() { scenes->setScene(std::make_unique<Menu2State>(scenes, save, slotIndex, slotPath)); }
+            )) {
+            return;
+        }
 
         if (backBtn && backBtn->getGlobalBounds().contains(mPos)) {
             scenes->setScene(std::make_unique<Menu2State>(scenes, save, slotIndex, slotPath));
@@ -132,4 +142,6 @@ void LevelSelectState::draw(sf::RenderWindow& window) {
     info.setPosition({20.f, WINDOW_HEIGHT - 40.f});
     info.setFillColor(sf::Color::White);
     window.draw(info);
+
+    settingsUI.draw(window);
 }

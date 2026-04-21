@@ -6,6 +6,7 @@
 #include "SaveManager.h"
 #include <string>
 #include <sstream>
+#include "SettingsUI.h"
 
 class SceneManager;
 
@@ -38,6 +39,8 @@ private:
     std::unique_ptr<sf::Sprite> rulesSprite;
     sf::Texture quitTex;
     std::unique_ptr<sf::Sprite> quitSprite;
+
+    SettingsUI settingsUI;
 };
 
 std::unique_ptr<Scene> createRules(SceneManager* scenes, const Save* save, int slotIndex, const std::string& slotPath);

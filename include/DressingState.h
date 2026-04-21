@@ -5,6 +5,7 @@
 #include <SFML/Graphics.hpp>
 #include "SaveManager.h"
 #include <string>
+#include "SettingsUI.h"
 
 class SceneManager;
 
@@ -37,6 +38,8 @@ private:
     
     std::vector<sf::Sprite> collIcons;
     bool showingInventory = false;
+
+    SettingsUI settingsUI;
 };
 
 // factory

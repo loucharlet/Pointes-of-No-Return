@@ -13,6 +13,8 @@ RulesState::RulesState(SceneManager* scenes_, const Save& save, int slotIndex_, 
     : scenes(scenes_), saveData(save), slotIndex(slotIndex_), slotPath(slotPath_)
 {
     AssetLoader::loadFont(font, "police_futura.ttf");
+    settingsUI.init(font);
+    settingsUI.setGameActionsEnabled(false);
 
     if (AssetLoader::loadTexture(rulesTex, "bookrules.png")) {
         rulesSprite = std::make_unique<sf::Sprite>(rulesTex);
@@ -39,6 +41,15 @@ void RulesState::handleEvent(const std::optional<sf::Event>& event, sf::RenderWi
     if (!event) return;
     if (const auto* mbp = event->getIf<sf::Event::MouseButtonPressed>()) {
         sf::Vector2f mPos = window.mapPixelToCoords(mbp->position);
+
+        if (settingsUI.handleClick(
+                mPos,
+                [&]() { window.close(); },
+                [&]() { scenes->setScene(std::make_unique<Menu2State>(scenes, saveData, slotIndex, slotPath)); }
+            )) {
+            return;
+        }
+
         if (langBtn.getGlobalBounds().contains(mPos)) {
             showEnglish = !showEnglish;
             return;
@@ -140,4 +151,6 @@ void RulesState::draw(sf::RenderWindow& window) {
     window.draw(langTxt);
 
     if (backBtn) window.draw(*backBtn);
+
+    settingsUI.draw(window);
 }

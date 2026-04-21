@@ -82,5 +82,11 @@
   "command": "/usr/bin/c++ -I/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/include -I/opt/homebrew/include -g -std=gnu++20 -arch arm64 -fcolor-diagnostics -o CMakeFiles/Pointes_of_No_Return.dir/src/RulesState.cpp.o -c /Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/src/RulesState.cpp",
   "file": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/src/RulesState.cpp",
   "output": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/cmake-build-debug/CMakeFiles/Pointes_of_No_Return.dir/src/RulesState.cpp.o"
+},
+{
+  "directory": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/cmake-build-debug",
+  "command": "/usr/bin/c++ -I/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/include -I/opt/homebrew/include -g -std=gnu++20 -arch arm64 -fcolor-diagnostics -o CMakeFiles/Pointes_of_No_Return.dir/src/CostumeState.cpp.o -c /Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/src/CostumeState.cpp",
+  "file": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/src/CostumeState.cpp",
+  "output": "/Users/barbielou/Desktop/code/projets_perso/Pointes-of-No-Return/cmake-build-debug/CMakeFiles/Pointes_of_No_Return.dir/src/CostumeState.cpp.o"
 }
 ]
