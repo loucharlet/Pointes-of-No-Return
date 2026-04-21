@@ -28,9 +28,6 @@ private:
     int slotIndex;
     std::string slotPath;
 
-    sf::Texture bgTex;
-    sf::Texture selTex, dressTex, costumeTex, rulesTex, backTex;
-    sf::Texture level1Tex, level1LockedTex;
     std::unique_ptr<sf::Sprite> bg;
     sf::Font font;
     std::vector<sf::Text> buttons;
@@ -46,7 +43,6 @@ private:
     bool showingRules = false;
 
     // === Idle animation danseuse (ligne 0 uniquement, 6 frames stables) ===
-    sf::Texture idleTex;
     std::unique_ptr<sf::Sprite> idleSprite;
     std::vector<sf::IntRect> idleFrames;
     int   idleFrame = 0;

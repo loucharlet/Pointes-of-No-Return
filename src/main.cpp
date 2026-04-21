@@ -17,6 +17,7 @@
 #include "SceneManager.h"
 #include "GameplayState.h"
 #include "Menu1State.h"
+#include "AssetLoader.h"
 
 struct Popup {
     sf::Sprite sprite;
@@ -26,6 +27,7 @@ struct Popup {
 };
 
 int main() {
+    AssetLoader::preloadAll();
     sf::RenderWindow window(sf::VideoMode({(unsigned int)WINDOW_WIDTH, (unsigned int)WINDOW_HEIGHT}), "Pointes of No Return");
     window.setFramerateLimit(60);
 
