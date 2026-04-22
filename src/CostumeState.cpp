@@ -17,7 +17,7 @@ CostumeState::CostumeState(SceneManager* scenes_, const Save& save, int slotInde
     settingsUI.setGameActionsEnabled(false);
 
 
-    if (AssetLoader::loadTexture(bgTex, "backstagesbg.png")) {
+    if (AssetLoader::loadTexture(bgTex, "costumes_bg.png")) {
         bg = std::make_unique<sf::Sprite>(bgTex);
         if (bgTex.getSize().x > 0 && bgTex.getSize().y > 0) {
             bg->setScale(sf::Vector2f(WINDOW_WIDTH / (float)bgTex.getSize().x, WINDOW_HEIGHT / (float)bgTex.getSize().y));
