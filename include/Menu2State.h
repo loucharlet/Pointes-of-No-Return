@@ -51,6 +51,22 @@ private:
     static constexpr float IDLE_SCALE          = 1.f;
 
     SettingsUI settingsUI;
+
+    // === Souris ===
+    struct MouseInstance {
+        std::unique_ptr<sf::Sprite> sprite;
+        sf::Vector2f pos;
+        float scale;
+    };
+    std::vector<MouseInstance> mice;
+
+    // Animation des souris
+    int mouseFrame = 0;
+    float mouseTimer = 0.f;
+    static constexpr int MOUSE_FRAME_COUNT = 15;
+    static constexpr int MOUSE_FRAME_WIDTH = 256;
+    static constexpr int MOUSE_FRAME_HEIGHT = 256;
+    static constexpr float MOUSE_FRAME_DURATION = 0.07f; 
 };
 
 #endif
