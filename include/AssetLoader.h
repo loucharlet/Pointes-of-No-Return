@@ -27,15 +27,17 @@ namespace AssetLoader {
         return cache;
     }
 
-    // Chemins de recherche
-    inline std::vector<std::string> getCandidates(const std::string& filename, const std::string& type) {
-        return {
-            "./assets/" + type + "/" + filename,
-            "./cmake-build-debug/assets/" + type + "/" + filename,
-            "./assets/" + filename,
-            "./cmake-build-debug/assets/" + filename,
-            filename
-        };
+    // Fonction interne pour charger une ressource avec un chemin direct sans spammer la console
+    template<typename T>
+    inline bool directLoad(T& resource, const std::string& path) {
+        if (!std::filesystem::exists(path)) return false;
+        return resource.loadFromFile(path);
+    }
+
+    // Spécialisation pour sf::Font car openFromFile != loadFromFile
+    inline bool directLoadFont(sf::Font& font, const std::string& path) {
+        if (!std::filesystem::exists(path)) return false;
+        return font.openFromFile(path);
     }
 
     // Chargement unique (Texture)
@@ -43,11 +45,21 @@ namespace AssetLoader {
         auto& cache = textureCache();
         if (cache.find(filename) != cache.end()) return &cache[filename];
 
-        for (const auto& path : getCandidates(filename, "img")) {
-            if (cache[filename].loadFromFile(path)) return &cache[filename];
+        // Chemins prioritaires
+        std::vector<std::string> paths = {
+            "./assets/img/" + filename,
+            "./cmake-build-debug/assets/img/" + filename,
+            "./assets/" + filename,
+            filename
+        };
+
+        for (const auto& path : paths) {
+            if (directLoad(cache[filename], path)) return &cache[filename];
         }
+
         cache.erase(filename);
-        std::cerr << "!!! Failed to load texture: " << filename << std::endl;
+        // On ne log que si c'est vraiment introuvable après tous les essais
+        // std::cerr << "!!! Texture introuvable : " << filename << std::endl;
         return nullptr;
     }
 
@@ -56,11 +68,11 @@ namespace AssetLoader {
         auto& cache = fontCache();
         if (cache.find(filename) != cache.end()) return &cache[filename];
 
-        for (const auto& path : getCandidates(filename, "")) {
-            if (cache[filename].openFromFile(path)) return &cache[filename];
+        std::vector<std::string> paths = { "./assets/" + filename, "./cmake-build-debug/assets/" + filename, filename };
+        for (const auto& path : paths) {
+            if (directLoadFont(cache[filename], path)) return &cache[filename];
         }
         cache.erase(filename);
-        std::cerr << "!!! Failed to load font: " << filename << std::endl;
         return nullptr;
     }
 
@@ -69,19 +81,19 @@ namespace AssetLoader {
         auto& cache = soundCache();
         if (cache.find(filename) != cache.end()) return &cache[filename];
 
-        for (const auto& path : getCandidates(filename, "audio")) {
-            if (cache[filename].loadFromFile(path)) return &cache[filename];
+        std::vector<std::string> paths = { "./assets/audio/" + filename, "./cmake-build-debug/assets/audio/" + filename, filename };
+        for (const auto& path : paths) {
+            if (directLoad(cache[filename], path)) return &cache[filename];
         }
         cache.erase(filename);
-        std::cerr << "!!! Failed to load sound: " << filename << std::endl;
         return nullptr;
     }
 
-    // Préchargement de tout le dossier assets
+    // Préchargement ultra-rapide
     inline void preloadAll() {
         std::cout << "--- Preloading assets... ---" << std::endl;
         
-        std::vector<std::string> basePaths = {"./assets", "./cmake-build-debug/assets", "../assets"};
+        std::vector<std::string> basePaths = {"./assets", "./cmake-build-debug/assets"};
         std::string assetsRoot = "";
         for (const auto& bp : basePaths) {
             if (std::filesystem::exists(bp)) {
@@ -90,46 +102,38 @@ namespace AssetLoader {
             }
         }
 
-        if (assetsRoot.empty()) {
-            std::cerr << "!!! Could not find assets folder!" << std::endl;
-            return;
-        }
+        if (assetsRoot.empty()) return;
 
         for (const auto& entry : std::filesystem::recursive_directory_iterator(assetsRoot)) {
-            if (entry.is_regular_file()) {
-                std::string ext = entry.path().extension().string();
-                std::string name = entry.path().filename().string();
-                
-                // On charge selon l'extension
-                if (ext == ".png" || ext == ".jpg" || ext == ".jpeg") {
-                    getTexture(name);
-                } else if (ext == ".ogg" || ext == ".wav") {
-                    getSoundBuffer(name);
-                } else if (ext == ".ttf") {
-                    getFont(name);
-                }
+            if (!entry.is_regular_file()) continue;
+
+            std::string path = entry.path().string();
+            std::string name = entry.path().filename().string();
+            std::string ext = entry.path().extension().string();
+
+            // Si c'est déjà dans le cache, on passe
+            if (textureCache().count(name) || soundCache().count(name) || fontCache().count(name)) continue;
+
+            if (ext == ".png" || ext == ".jpg" || ext == ".jpeg") {
+                directLoad(textureCache()[name], path);
+            } else if (ext == ".ogg" || ext == ".wav") {
+                directLoad(soundCache()[name], path);
+            } else if (ext == ".ttf") {
+                directLoadFont(fontCache()[name], path);
             }
         }
-        std::cout << "--- Assets preloaded! (" << textureCache().size() << " textures, " 
-                  << soundCache().size() << " sounds) ---" << std::endl;
+        std::cout << "--- Assets preloaded! (" << textureCache().size() << " textures) ---" << std::endl;
     }
 
-    // Compatibilité avec l'ancien code (pour ne pas tout casser d'un coup)
+    // Compatibilité
     inline bool loadTexture(sf::Texture& tex, const std::string& filename) {
         sf::Texture* cached = getTexture(filename);
-        if (cached) {
-            tex = *cached; // Copie pour compatibilité
-            return true;
-        }
+        if (cached) { tex = *cached; return true; }
         return false;
     }
-
     inline bool loadFont(sf::Font& font, const std::string& filename) {
         sf::Font* cached = getFont(filename);
-        if (cached) {
-            // Les sf::Font ne sont pas facilement copiables, on utilise l'ancien système ou on renvoie true si déjà là
-            return font.openFromFile(getCandidates(filename, "")[0]); 
-        }
+        if (cached) return font.openFromFile(filename); // Simplifié
         return false;
     }
 }
