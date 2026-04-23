@@ -10,8 +10,7 @@ std::unique_ptr<Scene> createCostume(SceneManager* scenes, const Save* save, int
 }
 
 CostumeState::CostumeState(SceneManager* scenes_, const Save& save, int slotIndex_, const std::string& slotPath_)
-    : scenes(scenes_), saveData(save), slotIndex(slotIndex_), slotPath(slotPath_)
-{
+    : scenes(scenes_), saveData(save), slotIndex(slotIndex_), slotPath(slotPath_) {
     AssetLoader::loadFont(font, "police_futura.ttf");
     settingsUI.init(font);
     settingsUI.setGameActionsEnabled(false);
@@ -52,7 +51,7 @@ CostumeState::CostumeState(SceneManager* scenes_, const Save& save, int slotInde
     panel.setOrigin({panel.getSize().x / 2.f, panel.getSize().y / 2.f});
     panel.setPosition({WINDOW_WIDTH / 2.f, WINDOW_HEIGHT / 2.f - 20.f});
 
-    panelTitle = std::make_unique<sf::Text>(font, "COSTUMES", 40);
+    panelTitle = std::make_unique<sf::Text>(font, "X  <<<IN DEV>>>>  X", 40);
     panelTitle->setFillColor(sf::Color::White);
     panelTitle->setOutlineColor(sf::Color::Black);
     panelTitle->setOutlineThickness(3.f);
@@ -96,7 +95,6 @@ void CostumeState::handleEvent(const std::optional<sf::Event>& event, sf::Render
         }
 
         if (showingCostumes) {
-            // clic n'importe où ferme l'overlay
             showingCostumes = false;
             return;
         }
@@ -135,4 +133,7 @@ void CostumeState::draw(sf::RenderWindow& window) {
 
     settingsUI.draw(window);
 }
+
+
+
 
