@@ -7,7 +7,6 @@
 #include "Menu1State.h"
 #include "GameplayState.h"
 #include "AssetLoader.h"
-#include <iostream>
 #include "Constants.h"
 
 void Menu2State::initCommon() {
@@ -44,35 +43,34 @@ Menu2State::Menu2State(SceneManager* manager, const Save& save, int slotIndex_, 
     if (auto* tex = AssetLoader::getTexture("Button_EnScene.png")) {
         selSprite = std::make_unique<sf::Sprite>(*tex);
         selSprite->setScale({btnScale, btnScale});
-        selSprite->setPosition({385.f, WINDOW_HEIGHT - 520.f});
+        selSprite->setPosition({WINDOW_WIDTH / 2.f ,  WINDOW_HEIGHT / 2.f - 70.f});
     }
     if (auto* tex = AssetLoader::getTexture("niveau1.png")) {
         level1Sprite = std::make_unique<sf::Sprite>(*tex);
-        level1Sprite->setScale({btnScale, btnScale});
-        level1Sprite->setPosition({65.f, WINDOW_HEIGHT - 350.f});
+        level1Sprite->setScale({btnScale * 0.96f, btnScale * 0.96f});
+        level1Sprite->setPosition({WINDOW_WIDTH / 2.f - 232.f, WINDOW_HEIGHT / 2.f - 70.f});
     }
     if (auto* tex = AssetLoader::getTexture("Button_Inventaire.png")) {
         dressSprite = std::make_unique<sf::Sprite>(*tex);
         dressSprite->setScale({btnScale, btnScale});
-        dressSprite->setPosition({704.f, WINDOW_HEIGHT - 360.f});
+        dressSprite->setPosition({WINDOW_WIDTH / 2.f - 400.f, 120.f});
     }
     if (auto* tex = AssetLoader::getTexture("Button_Costume.png")) {
         costumeSprite = std::make_unique<sf::Sprite>(*tex);
         costumeSprite->setScale({btnScale, btnScale});
-        costumeSprite->setPosition({704.f, WINDOW_HEIGHT - 680.f});
+        costumeSprite->setPosition({WINDOW_WIDTH / 2.f + 180.f, 120.f});
     }
     if (auto* tex = AssetLoader::getTexture("rules.png")) {
         rulesBtnSprite = std::make_unique<sf::Sprite>(*tex);
-        rulesBtnSprite->setScale({0.12f, 0.12f});
-        rulesBtnSprite->setPosition({30.f, WINDOW_HEIGHT - 780.f});
+        rulesBtnSprite->setScale({0.07f, 0.07f});
+        rulesBtnSprite->setPosition({40.f, 20.f});
     }
     if (auto* tex = AssetLoader::getTexture("BACK.png")) {
         backSprite = std::make_unique<sf::Sprite>(*tex);
         backSprite->setScale({0.05f, 0.05f});
-        backSprite->setPosition({20.f, WINDOW_HEIGHT - 130.f});
+        backSprite->setPosition({40.f, WINDOW_HEIGHT - 120.f});
     }
 
-    // === Initialisation des 5 Souris relatives aux boutons ===
     sf::Texture* mouseTex = AssetLoader::getTexture("mouse_spritesheet.png");
     if (mouseTex) {
         auto addMouse = [&](sf::Sprite* target, float scale) {
@@ -83,7 +81,6 @@ Menu2State::Menu2State(SceneManager* manager, const Save& save, int slotIndex_, 
             m.sprite->setTextureRect(sf::IntRect({0, 0}, {MOUSE_FRAME_WIDTH, MOUSE_FRAME_HEIGHT}));
             m.sprite->setScale({m.scale, m.scale});
             sf::FloatRect b = target->getGlobalBounds();
-            // Syntaxe SFML 3 : position.x, size.x, etc.
             m.sprite->setPosition({b.position.x + b.size.x - 40.f, b.position.y + b.size.y - 40.f});
             mice.push_back(std::move(m));
         };
@@ -114,30 +111,29 @@ Menu2State::Menu2State(SceneManager* manager)
     if (auto* tex = AssetLoader::getTexture("Button_EnScene.png")) {
         selSprite = std::make_unique<sf::Sprite>(*tex);
         selSprite->setScale({btnScale, btnScale});
-        selSprite->setPosition({395.f, WINDOW_HEIGHT - 460.f});
+        selSprite->setPosition({WINDOW_WIDTH / 2.f + 20.f,  WINDOW_HEIGHT / 2.f - 40.f});
     }
     if (auto* tex = AssetLoader::getTexture("Button_Inventaire.png")) {
         dressSprite = std::make_unique<sf::Sprite>(*tex);
         dressSprite->setScale({btnScale, btnScale});
-        dressSprite->setPosition({700.f, WINDOW_HEIGHT - 300.f});
+        dressSprite->setPosition({WINDOW_WIDTH / 2.f - 300.f, 120.f});
     }
     if (auto* tex = AssetLoader::getTexture("Button_Costume.png")) {
         costumeSprite = std::make_unique<sf::Sprite>(*tex);
         costumeSprite->setScale({btnScale, btnScale});
-        costumeSprite->setPosition({700.f, WINDOW_HEIGHT - 680.f});
+        costumeSprite->setPosition({WINDOW_WIDTH / 2.f + 180.f, 120.f});
     }
     if (auto* tex = AssetLoader::getTexture("rules.png")) {
         rulesBtnSprite = std::make_unique<sf::Sprite>(*tex);
         rulesBtnSprite->setScale({0.12f, 0.12f});
-        rulesBtnSprite->setPosition({80.f, WINDOW_HEIGHT - 290.f});
+        rulesBtnSprite->setPosition({40.f, 40.f});
     }
     if (auto* tex = AssetLoader::getTexture("BACK.png")) {
         backSprite = std::make_unique<sf::Sprite>(*tex);
         backSprite->setScale({0.05f, 0.05f});
-        backSprite->setPosition({20.f, WINDOW_HEIGHT - 130.f});
+        backSprite->setPosition({40.f, WINDOW_HEIGHT - 120.f});
     }
 
-    // === Initialisation des 5 Souris relatives aux boutons ===
     sf::Texture* mouseTex = AssetLoader::getTexture("mouse_spritesheet.png");
     if (mouseTex) {
         auto addMouse = [&](sf::Sprite* target, float scale) {
@@ -148,7 +144,6 @@ Menu2State::Menu2State(SceneManager* manager)
             m.sprite->setTextureRect(sf::IntRect({0, 0}, {MOUSE_FRAME_WIDTH, MOUSE_FRAME_HEIGHT}));
             m.sprite->setScale({m.scale, m.scale});
             sf::FloatRect b = target->getGlobalBounds();
-            // Syntaxe SFML 3 : position.x, size.x, etc.
             m.sprite->setPosition({b.position.x + b.size.x - 40.f, b.position.y + b.size.y - 40.f});
             mice.push_back(std::move(m));
         };
