@@ -59,12 +59,31 @@ LevelSelectState::LevelSelectState(SceneManager* manager, const Save* saveOverri
         bool unlocked = counts[i] >= REQ[i];
         levels.push_back({sf::FloatRect(positions[i], sf::Vector2f(btnW, btnH)), unlocked, "Ballet " + std::to_string(i+1)});
     }
+
+    // Init Upcoming UI
+    upcomingOverlay.setSize({400.f, 150.f});
+    upcomingOverlay.setFillColor(sf::Color(0, 0, 0, 200));
+    upcomingOverlay.setOutlineColor(sf::Color::White);
+    upcomingOverlay.setOutlineThickness(2.f);
+    upcomingOverlay.setOrigin({200.f, 75.f});
+    upcomingOverlay.setPosition({WINDOW_WIDTH / 2.f, WINDOW_HEIGHT / 2.f});
+
+    upcomingText = std::make_unique<sf::Text>(font, "UPCOMING", 40);
+    upcomingText->setFillColor(sf::Color::White);
+    sf::FloatRect textBounds = upcomingText->getLocalBounds();
+    upcomingText->setOrigin({textBounds.position.x + textBounds.size.x / 2.f, textBounds.position.y + textBounds.size.y / 2.f});
+    upcomingText->setPosition({WINDOW_WIDTH / 2.f, WINDOW_HEIGHT / 2.f});
 }
 
 void LevelSelectState::handleEvent(const std::optional<sf::Event>& event, sf::RenderWindow& window) {
     if (!event) return;
     if (const auto* mbp = event->getIf<sf::Event::MouseButtonPressed>()) {
         sf::Vector2f mPos = window.mapPixelToCoords(mbp->position);
+
+        if (showUpcoming) {
+            showUpcoming = false;
+            return;
+        }
 
         if (settingsUI.handleClick(
                 mPos,
@@ -82,7 +101,7 @@ void LevelSelectState::handleEvent(const std::optional<sf::Event>& event, sf::Re
         for (size_t i = 0; i < levels.size(); ++i) {
             if (levels[i].rect.contains(mPos)) {
                 if (levels[i].unlocked) {
-                    scenes->setScene(std::make_unique<GameplayState>(scenes, static_cast<int>(i) + 1, save, slotPath, slotIndex));
+                    showUpcoming = true;
                 } else {
                     std::cout << "Ballet locked: need more collectibles\n";
                 }
@@ -92,7 +111,8 @@ void LevelSelectState::handleEvent(const std::optional<sf::Event>& event, sf::Re
     }
     if (const auto* kp = event->getIf<sf::Event::KeyPressed>()) {
         if (kp->code == sf::Keyboard::Key::Escape) {
-            scenes->setScene(std::make_unique<Menu2State>(scenes, save, slotIndex, slotPath));
+            if (showUpcoming) showUpcoming = false;
+            else scenes->setScene(std::make_unique<Menu2State>(scenes, save, slotIndex, slotPath));
         }
     }
 }
@@ -142,6 +162,11 @@ void LevelSelectState::draw(sf::RenderWindow& window) {
     info.setPosition({20.f, WINDOW_HEIGHT - 40.f});
     info.setFillColor(sf::Color::White);
     window.draw(info);
+
+    if (showUpcoming) {
+        window.draw(upcomingOverlay);
+        if (upcomingText) window.draw(*upcomingText);
+    }
 
     settingsUI.draw(window);
 }

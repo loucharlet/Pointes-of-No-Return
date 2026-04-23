@@ -36,6 +36,10 @@ private:
     std::unique_ptr<sf::Sprite> bg;
 
     SettingsUI settingsUI;
+
+    bool showUpcoming = false;
+    sf::RectangleShape upcomingOverlay;
+    std::unique_ptr<sf::Text> upcomingText;
 };
 
 std::unique_ptr<Scene> createLevelSelect(SceneManager* scenes, const Save* saveOverride = nullptr, int slotIndex = -1, const std::string& slotPath = "");
