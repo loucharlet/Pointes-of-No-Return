@@ -30,8 +30,8 @@ private:
     SceneManager* scenes = nullptr;
     // textures & assets
     sf::Texture pTex, oTex, texBtnReplay, texBtnQuit, skyTex, operaTex, roadTex, bTex1, bTex2, bTex3, tArc, tGalerie, tNotreDame, tMoulin, texScoreIcon, texClouds, tLogo, tFullInventory, tFullInventoryBack;
-    sf::Texture collTex1, collTex2, collTex3, collTex4;
-    sf::Texture popupTex1, popupTex2, popupTex3, popupTex4;
+    sf::Texture collTex1, collTex2, collTex3, collTex4, costomableTex;
+    sf::Texture popupTex1, popupTex2, popupTex3, popupTex4, costomablePopupTex;
 
     // audio
     sf::Music levelMusic, gameOverMusic;

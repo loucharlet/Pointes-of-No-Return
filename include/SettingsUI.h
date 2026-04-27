@@ -21,7 +21,7 @@ public:
         spriteSettings_->setScale({0.35f, 0.35f});
         spriteSettings_->setPosition({WINDOW_WIDTH - 80.f, 30.f});
 
-        bigPanel_ = sf::RectangleShape({600.f, 500.f});
+        bigPanel_.setSize({600.f, 500.f});
         bigPanel_.setTexture(&texSettingsBg_);
         bigPanel_.setOutlineThickness(5.f);
         bigPanel_.setOutlineColor(sf::Color::Black);
@@ -155,4 +155,3 @@ private:
 };
 
 #endif
-

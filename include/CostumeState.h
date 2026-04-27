@@ -34,13 +34,23 @@ private:
     sf::Texture backTex;
     std::unique_ptr<sf::Sprite> backBtn;
 
-    sf::RectangleShape openBtn;
-    std::unique_ptr<sf::Text> openBtnTxt;
+    std::unique_ptr<sf::Sprite> costuventoryBtn;
 
     bool showingCostumes = false;
+    sf::RectangleShape overlay; // Dim background when modal is open
     sf::RectangleShape panel;
-    std::unique_ptr<sf::Text> panelTitle;
-    std::vector<sf::Text> costumeLines;
+    
+    struct CostumeUI {
+        std::string id;
+        std::unique_ptr<sf::Sprite> modalSprite;
+        std::unique_ptr<sf::Sprite> btnSprite;
+        int requiredCostomables;
+        bool isUnlocked;
+    };
+    std::vector<CostumeUI> costumes;
+
+    void updateCostumesUI();
+    void equip(const std::string& id);
 
     SettingsUI settingsUI;
 };

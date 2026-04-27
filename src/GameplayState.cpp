@@ -22,7 +22,15 @@ GameplayState::GameplayState(SceneManager* scenes_, int levelId_, const Save& sa
 {
     // load assets
     std::cout << "GameplayState started for levelId=" << levelId << std::endl;
-    AssetLoader::loadTexture(pTex, "player_lvl1_pink.png");
+    
+    std::string playerTexName = "player_lvl1_pink.png"; // default
+    if (saveData.equippedCostume == "ladybug") {
+        // playerTexName = "player_ladybug.png"; // uncomment when assets are ready
+    } else if (saveData.equippedCostume == "rythmics") {
+        // playerTexName = "player_rythmics.png"; // uncomment when assets are ready
+    }
+    
+    AssetLoader::loadTexture(pTex, playerTexName);
     AssetLoader::loadTexture(oTex, "obstacle.png");
     AssetLoader::loadTexture(texBtnReplay, "REPLAY.png");
     AssetLoader::loadTexture(texBtnQuit, "QUIT.png");
@@ -46,23 +54,25 @@ GameplayState::GameplayState(SceneManager* scenes_, int levelId_, const Save& sa
     AssetLoader::loadTexture(collTex2, "coll2.png");
     AssetLoader::loadTexture(collTex3, "coll3.png");
     AssetLoader::loadTexture(collTex4, "coll4.png");
+    AssetLoader::loadTexture(costomableTex, "coll1.png"); // Placeholder for costomable
 
     AssetLoader::loadTexture(popupTex1, "+1swanlake.png");
     AssetLoader::loadTexture(popupTex2, "+1nutcracker.png");
     AssetLoader::loadTexture(popupTex3, "+1sylphide.png");
     AssetLoader::loadTexture(popupTex4, "+1coppelia.png");
+    AssetLoader::loadTexture(costomablePopupTex, "+1swanlake.png"); // Placeholder for costomable popup
 
-    levelMusic.openFromFile("./assets/audio/level_theme.ogg");
+    if (auto p = AssetLoader::findAudioPath("level_theme.ogg"); !p.empty()) levelMusic.openFromFile(p);
     levelMusic.setLooping(true);
-    gameOverMusic.openFromFile("./assets/audio/gameover_theme.ogg");
+    if (auto p = AssetLoader::findAudioPath("gameover_theme.ogg"); !p.empty()) gameOverMusic.openFromFile(p);
     gameOverMusic.setLooping(true);
     levelMusic.setVolume(AppSettings::volume);
     gameOverMusic.setVolume(AppSettings::volume);
     if (AppSettings::musicOn) levelMusic.play();
 
-    bufCollec.loadFromFile("./assets/audio/collectibles.ogg");
-    bufDeath.loadFromFile("./assets/audio/death.ogg");
-    bufStart.loadFromFile("./assets/audio/gamestart.ogg");
+    if (auto p = AssetLoader::findAudioPath("collectibles.ogg"); !p.empty()) bufCollec.loadFromFile(p);
+    if (auto p = AssetLoader::findAudioPath("death.ogg"); !p.empty()) bufDeath.loadFromFile(p);
+    if (auto p = AssetLoader::findAudioPath("gamestart.ogg"); !p.empty()) bufStart.loadFromFile(p);
     sfxCollec = std::make_unique<sf::Sound>(bufCollec);
     sfxDeath = std::make_unique<sf::Sound>(bufDeath);
     sfxStart = std::make_unique<sf::Sound>(bufStart);
@@ -225,8 +235,16 @@ void GameplayState::update(float dt) {
         }
 
         if (collectiblePending && collectibleTimer.getElapsedTime().asSeconds() > 1.2f) {
-            int randType = rand() % 4;
-            collectibles.push_back(std::make_unique<Collectible>(*collectibleTextures[randType], pendingLane));
+            bool isLevel1 = (levelId == 0);
+            // In level 1 (Paris), 20% chance to spawn a costomable
+            bool spawnCostomable = isLevel1 && (rand() % 100 < 20);
+
+            if (spawnCostomable) {
+                collectibles.push_back(std::make_unique<Collectible>(costomableTex, pendingLane, true));
+            } else {
+                int randType = rand() % 4;
+                collectibles.push_back(std::make_unique<Collectible>(*collectibleTextures[randType], pendingLane, false));
+            }
             totalCollectiblesSpawned++;
             collectiblePending = false;
         }
@@ -257,22 +275,28 @@ void GameplayState::update(float dt) {
                 if ((*it)->lane == ballerine->lane && (*it)->progress > 0.7f && (*it)->progress < 0.9f) {
                     if (AppSettings::sfxOn && sfxCollec) sfxCollec->play();
                     score += 50;
-                    const sf::Texture* collectedTex = &(*it)->sprite.getTexture();
-                    if (collectedTex == &collTex1) {
-                        popups.emplace_back(popupTex1);
-                        saveData.coll1++;
-                    }
-                    else if (collectedTex == &collTex2) {
-                        popups.emplace_back(popupTex2);
-                        saveData.coll2++;
-                    }
-                    else if (collectedTex == &collTex3) {
-                        popups.emplace_back(popupTex3);
-                        saveData.coll3++;
-                    }
-                    else if (collectedTex == &collTex4) {
-                        popups.emplace_back(popupTex4);
-                        saveData.coll4++;
+
+                    if ((*it)->isCostomable) {
+                        popups.emplace_back(costomablePopupTex);
+                        saveData.costomables++;
+                    } else {
+                        const sf::Texture* collectedTex = &(*it)->sprite.getTexture();
+                        if (collectedTex == &collTex1) {
+                            popups.emplace_back(popupTex1);
+                            saveData.coll1++;
+                        }
+                        else if (collectedTex == &collTex2) {
+                            popups.emplace_back(popupTex2);
+                            saveData.coll2++;
+                        }
+                        else if (collectedTex == &collTex3) {
+                            popups.emplace_back(popupTex3);
+                            saveData.coll3++;
+                        }
+                        else if (collectedTex == &collTex4) {
+                            popups.emplace_back(popupTex4);
+                            saveData.coll4++;
+                        }
                     }
 
                     if (!popups.empty()) popups.back().sprite.setScale({0.15f, 0.15f});

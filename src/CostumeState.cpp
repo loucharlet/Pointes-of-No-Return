@@ -15,69 +15,104 @@ CostumeState::CostumeState(SceneManager* scenes_, const Save& save, int slotInde
     settingsUI.init(font);
     settingsUI.setGameActionsEnabled(false);
 
-
-    if (AssetLoader::loadTexture(bgTex, "costumes_bg.png")) {
-        bg = std::make_unique<sf::Sprite>(bgTex);
-        if (bgTex.getSize().x > 0 && bgTex.getSize().y > 0) {
-            bg->setScale(sf::Vector2f(WINDOW_WIDTH / (float)bgTex.getSize().x, WINDOW_HEIGHT / (float)bgTex.getSize().y));
-        }
-        bg->setPosition({0.f, 0.f});
+    if (auto* tex = AssetLoader::getTexture("costumes_bg.png")) {
+        bg = std::make_unique<sf::Sprite>(*tex);
+        AssetLoader::scaleToCoverLeft(*bg, WINDOW_WIDTH, WINDOW_HEIGHT);
     }
 
-    if (AssetLoader::loadTexture(backTex, "BACK.png")) {
-        backBtn = std::make_unique<sf::Sprite>(backTex);
+    if (auto* tex = AssetLoader::getTexture("BACK.png")) {
+        backBtn = std::make_unique<sf::Sprite>(*tex);
         backBtn->setScale({0.05f, 0.05f});
         backBtn->setPosition({20.f, WINDOW_HEIGHT - 130.f});
     }
 
-    openBtn.setSize({260.f, 60.f});
-    openBtn.setFillColor(sf::Color(0, 0, 0, 160));
-    openBtn.setOutlineThickness(3.f);
-    openBtn.setOutlineColor(sf::Color::Black);
-    openBtn.setPosition({WINDOW_WIDTH / 2.f - 130.f, WINDOW_HEIGHT - 130.f});
+    if (auto* tex = AssetLoader::getTexture("costuventory.png")) {
+        costuventoryBtn = std::make_unique<sf::Sprite>(*tex);
+        costuventoryBtn->setScale({0.4f, 0.4f});
+        auto b = costuventoryBtn->getLocalBounds();
+        costuventoryBtn->setOrigin({b.size.x / 2.f, b.size.y});
+        costuventoryBtn->setPosition({WINDOW_WIDTH / 2.f + 200.f, WINDOW_HEIGHT - 105.f});
+    }
 
-    openBtnTxt = std::make_unique<sf::Text>(font, "Costumes", 28);
-    openBtnTxt->setFillColor(sf::Color::White);
-    auto tb = openBtnTxt->getLocalBounds();
-    openBtnTxt->setPosition({
-        openBtn.getPosition().x + openBtn.getSize().x / 2.f - tb.size.x / 2.f,
-        openBtn.getPosition().y + 14.f
-    });
+    overlay.setSize({WINDOW_WIDTH, WINDOW_HEIGHT});
+    overlay.setFillColor(sf::Color(0, 0, 0, 150));
 
-    panel.setSize({700.f, 520.f});
-    panel.setFillColor(sf::Color(0, 0, 0, 190));
-    panel.setOutlineThickness(4.f);
-    panel.setOutlineColor(sf::Color::Black);
+    panel.setSize({800.f, 500.f});
+    panel.setFillColor(sf::Color(30, 30, 40, 230));
+    panel.setOutlineThickness(5.f);
+    panel.setOutlineColor(sf::Color::White);
     panel.setOrigin({panel.getSize().x / 2.f, panel.getSize().y / 2.f});
-    panel.setPosition({WINDOW_WIDTH / 2.f, WINDOW_HEIGHT / 2.f - 20.f});
+    panel.setPosition({WINDOW_WIDTH / 2.f, WINDOW_HEIGHT / 2.f});
 
-    panelTitle = std::make_unique<sf::Text>(font, "X  <<<IN DEV>>>>  X", 40);
-    panelTitle->setFillColor(sf::Color::White);
-    panelTitle->setOutlineColor(sf::Color::Black);
-    panelTitle->setOutlineThickness(3.f);
-    panelTitle->setPosition({WINDOW_WIDTH / 2.f - 150.f, 150.f});
-
-    // mapping simple: 4 costumes liés aux 4 collectibles
-    struct CostumeReq { std::string name; int have; int need; };
-    std::vector<CostumeReq> req = {
-        {"Swan Lake costume", saveData.coll1, 50},
-        {"Nutcracker costume", saveData.coll2, 200},
-        {"La Sylphide costume", saveData.coll3, 100},
-        {"Coppelia costume", saveData.coll4, 250},
+    struct Config { std::string id; std::string img; int req; };
+    std::vector<Config> configs = {
+        {"ballet", "modal_ballet.png", 0},
+        {"ladybug", "modal_ladybug.png", 50},
+        {"rythmics", "modal_rythmics.png", 100}
     };
 
-    float y = 250.f;
-    for (const auto& r : req) {
-        bool unlocked = r.have >= r.need;
-        std::string line = r.name + "  (" + std::to_string(r.have) + "/" + std::to_string(r.need) + ")  -  " + (unlocked ? "UNLOCKED" : "LOCKED");
-        sf::Text t(font, line, 24);
-        t.setFillColor(unlocked ? sf::Color(240, 240, 240) : sf::Color(200, 200, 200));
-        t.setOutlineColor(sf::Color::Black);
-        t.setOutlineThickness(2.f);
-        t.setPosition({WINDOW_WIDTH / 2.f - 290.f, y});
-        costumeLines.push_back(t);
-        y += 55.f;
+    // Standardized spacing and sizing
+    float stepX = 320.f;
+    float startX = WINDOW_WIDTH / 2.f - stepX;
+    float yPos = WINDOW_HEIGHT / 2.f - 60.f;
+
+    for (int i = 0; i < (int)configs.size(); ++i) {
+        CostumeUI cui;
+        cui.id = configs[i].id;
+        cui.requiredCostomables = configs[i].req;
+        
+        if (auto* tex = AssetLoader::getTexture(configs[i].img)) {
+            cui.modalSprite = std::make_unique<sf::Sprite>(*tex);
+            cui.modalSprite->setScale({0.16f, 0.16f});
+            auto b = cui.modalSprite->getLocalBounds();
+            cui.modalSprite->setOrigin({b.size.x / 2.f, b.size.y / 2.f});
+            cui.modalSprite->setPosition({startX + i * stepX, yPos});
+        }
+        
+        if (auto* tex = AssetLoader::getTexture("verrouille.png")) {
+            cui.btnSprite = std::make_unique<sf::Sprite>(*tex);
+            cui.btnSprite->setScale({0.08f, 0.08f});
+        }
+        
+        costumes.push_back(std::move(cui));
     }
+
+    updateCostumesUI();
+}
+
+void CostumeState::updateCostumesUI() {
+    float buttonYOffset = 130.f;
+    for (auto& c : costumes) {
+        c.isUnlocked = (saveData.costomables >= c.requiredCostomables);
+        
+        std::string texName = "verrouille.png";
+        if (c.isUnlocked) {
+            texName = (saveData.equippedCostume == c.id) ? "equipe.png" : "desequipe.png";
+        }
+        
+        if (auto* tex = AssetLoader::getTexture(texName)) {
+            if (!c.btnSprite) {
+                c.btnSprite = std::make_unique<sf::Sprite>(*tex);
+            } else {
+                c.btnSprite->setTexture(*tex, true);
+            }
+            
+            c.btnSprite->setScale({0.08f, 0.08f});
+            auto b = c.btnSprite->getLocalBounds();
+            c.btnSprite->setOrigin({b.size.x / 2.f, b.size.y / 2.f});
+            if (c.modalSprite) {
+                c.btnSprite->setPosition({c.modalSprite->getPosition().x, c.modalSprite->getPosition().y + buttonYOffset});
+            }
+        } else if (c.btnSprite) {
+            c.btnSprite->setScale({0.f, 0.f});
+        }
+    }
+}
+
+void CostumeState::equip(const std::string& id) {
+    saveData.equippedCostume = id;
+    SaveManager::save(saveData, slotPath);
+    updateCostumesUI();
 }
 
 void CostumeState::handleEvent(const std::optional<sf::Event>& event, sf::RenderWindow& window) {
@@ -95,6 +130,14 @@ void CostumeState::handleEvent(const std::optional<sf::Event>& event, sf::Render
         }
 
         if (showingCostumes) {
+            for (auto& c : costumes) {
+                if (c.btnSprite && c.btnSprite->getGlobalBounds().contains(mPos)) {
+                    if (c.isUnlocked && saveData.equippedCostume != c.id) {
+                        equip(c.id);
+                    }
+                    return;
+                }
+            }
             showingCostumes = false;
             return;
         }
@@ -104,7 +147,7 @@ void CostumeState::handleEvent(const std::optional<sf::Event>& event, sf::Render
             return;
         }
 
-        if (openBtn.getGlobalBounds().contains(mPos)) {
+        if (costuventoryBtn && costuventoryBtn->getGlobalBounds().contains(mPos)) {
             showingCostumes = true;
             return;
         }
@@ -112,7 +155,8 @@ void CostumeState::handleEvent(const std::optional<sf::Event>& event, sf::Render
 
     if (const auto* kp = event->getIf<sf::Event::KeyPressed>()) {
         if (kp->code == sf::Keyboard::Key::Escape) {
-            scenes->setScene(std::make_unique<Menu2State>(scenes, saveData, slotIndex, slotPath));
+            if (showingCostumes) showingCostumes = false;
+            else scenes->setScene(std::make_unique<Menu2State>(scenes, saveData, slotIndex, slotPath));
         }
     }
 }
@@ -122,18 +166,16 @@ void CostumeState::draw(sf::RenderWindow& window) {
     if (bg) window.draw(*bg);
     if (backBtn) window.draw(*backBtn);
 
-    window.draw(openBtn);
-    if (openBtnTxt) window.draw(*openBtnTxt);
+    if (costuventoryBtn) window.draw(*costuventoryBtn);
 
     if (showingCostumes) {
-        window.draw(panel);
-        if (panelTitle) window.draw(*panelTitle);
-        for (auto& t : costumeLines) window.draw(t);
+        for (auto& c : costumes) {
+            if (c.modalSprite) window.draw(*c.modalSprite);
+            if (c.btnSprite && c.btnSprite->getScale().x > 0.01f) {
+                window.draw(*c.btnSprite);
+            }
+        }
     }
 
     settingsUI.draw(window);
 }
-
-
-
-

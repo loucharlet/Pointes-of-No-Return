@@ -8,8 +8,10 @@ struct Save {
     int coll2 = 0; // Nutcracker
     int coll3 = 0; // La Sylphide
     int coll4 = 0; // Coppelia
+    int costomables = 0; // Costume unlock items
     int highscore = 0;
     std::string playerName;
+    std::string equippedCostume = "ballet"; // current equipped costume
     int levelReached = 0;
 };
 

@@ -10,7 +10,14 @@
 #include "Constants.h"
 
 void Menu2State::initCommon() {
-    sf::Texture* idleTex = AssetLoader::getTexture("player_menu2_pink.png");
+    std::string texName = "player_menu2_pink.png";
+    if (saveData.equippedCostume == "ladybug") {
+        // texName = "player_menu2_ladybug.png"; // Uncomment when asset exists
+    } else if (saveData.equippedCostume == "rythmics") {
+        // texName = "player_menu2_rythmics.png"; // Uncomment when asset exists
+    }
+
+    sf::Texture* idleTex = AssetLoader::getTexture(texName);
     if (!idleTex) return;
 
     idleFrames.clear();

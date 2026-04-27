@@ -27,9 +27,10 @@ bool SaveManager::load(Save& out, const std::string& path) {
             else if (key == "coll2") out.coll2 = std::stoi(val);
             else if (key == "coll3") out.coll3 = std::stoi(val);
             else if (key == "coll4") out.coll4 = std::stoi(val);
-            else if (key == "collectibles") { /* legacy field - ignore or map to one of them */ }
+            else if (key == "costomables") out.costomables = std::stoi(val);
             else if (key == "highscore") out.highscore = std::stoi(val);
             else if (key == "playerName") out.playerName = val;
+            else if (key == "equippedCostume") out.equippedCostume = val;
             else if (key == "levelReached") out.levelReached = std::stoi(val);
         } catch (...) {
             // ignore parse errors and continue
@@ -45,8 +46,10 @@ bool SaveManager::load(Save& out, const std::string& path) {
         f << "coll2=" << s.coll2 << "\n";
         f << "coll3=" << s.coll3 << "\n";
         f << "coll4=" << s.coll4 << "\n";
+        f << "costomables=" << s.costomables << "\n";
         f << "highscore=" << s.highscore << "\n";
         f << "playerName=" << s.playerName << "\n";
+        f << "equippedCostume=" << s.equippedCostume << "\n";
         f << "levelReached=" << s.levelReached << "\n";
         return true;
         }

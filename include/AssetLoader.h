@@ -11,7 +11,39 @@
 
 namespace AssetLoader {
 
-    // Caches pour les ressources
+    // Helper to find the base assets directory
+    inline std::string findAssetsRoot() {
+        std::vector<std::string> basePaths = {".", "..", "../..", "./cmake-build-debug", "../../cmake-build-debug"};
+        for (const auto& bp : basePaths) {
+            if (std::filesystem::exists(bp + "/assets")) return bp + "/assets";
+        }
+        return "";
+    }
+
+    // Helper to find a specific file path (for individual loads)
+    inline std::string findPath(const std::string& filename, const std::vector<std::string>& subDirs) {
+        std::string root = findAssetsRoot();
+        if (root.empty()) return "";
+        
+        // Remove "assets" from root to use subDirs like "/assets/img/"
+        std::string base = root.substr(0, root.find_last_of("/\\") - 6); 
+
+        std::vector<std::string> searchPaths = {root, root + "/img", root + "/audio", root + "/fonts"};
+        for (const auto& sp : searchPaths) {
+            std::string p = sp + "/" + filename;
+            if (std::filesystem::exists(p)) return p;
+        }
+        
+        // Recursive search as fallback
+        for (const auto& entry : std::filesystem::recursive_directory_iterator(root)) {
+            if (entry.is_regular_file() && entry.path().filename() == filename) {
+                return entry.path().string();
+            }
+        }
+        return "";
+    }
+
+    // Caches
     inline std::unordered_map<std::string, sf::Texture>& textureCache() {
         static std::unordered_map<std::string, sf::Texture> cache;
         return cache;
@@ -27,114 +59,82 @@ namespace AssetLoader {
         return cache;
     }
 
-    // Fonction interne pour charger une ressource avec un chemin direct sans spammer la console
-    template<typename T>
-    inline bool directLoad(T& resource, const std::string& path) {
-        if (!std::filesystem::exists(path)) return false;
-        return resource.loadFromFile(path);
-    }
-
-    // Spécialisation pour sf::Font car openFromFile != loadFromFile
-    inline bool directLoadFont(sf::Font& font, const std::string& path) {
-        if (!std::filesystem::exists(path)) return false;
-        return font.openFromFile(path);
-    }
-
-    // Chargement unique (Texture)
     inline sf::Texture* getTexture(const std::string& filename) {
         auto& cache = textureCache();
         if (cache.find(filename) != cache.end()) return &cache[filename];
-
-        // Chemins prioritaires
-        std::vector<std::string> paths = {
-            "./assets/img/" + filename,
-            "./cmake-build-debug/assets/img/" + filename,
-            "./assets/" + filename,
-            filename
-        };
-
-        for (const auto& path : paths) {
-            if (directLoad(cache[filename], path)) return &cache[filename];
-        }
-
+        std::string path = findPath(filename, {});
+        if (!path.empty() && cache[filename].loadFromFile(path)) return &cache[filename];
         cache.erase(filename);
-        // On ne log que si c'est vraiment introuvable après tous les essais
-        // std::cerr << "!!! Texture introuvable : " << filename << std::endl;
         return nullptr;
     }
 
-    // Chargement unique (Font)
     inline sf::Font* getFont(const std::string& filename) {
         auto& cache = fontCache();
         if (cache.find(filename) != cache.end()) return &cache[filename];
-
-        std::vector<std::string> paths = { "./assets/" + filename, "./cmake-build-debug/assets/" + filename, filename };
-        for (const auto& path : paths) {
-            if (directLoadFont(cache[filename], path)) return &cache[filename];
-        }
+        std::string path = findPath(filename, {});
+        if (!path.empty() && cache[filename].openFromFile(path)) return &cache[filename];
         cache.erase(filename);
         return nullptr;
     }
 
-    // Chargement unique (Sound)
     inline sf::SoundBuffer* getSoundBuffer(const std::string& filename) {
         auto& cache = soundCache();
         if (cache.find(filename) != cache.end()) return &cache[filename];
-
-        std::vector<std::string> paths = { "./assets/audio/" + filename, "./cmake-build-debug/assets/audio/" + filename, filename };
-        for (const auto& path : paths) {
-            if (directLoad(cache[filename], path)) return &cache[filename];
-        }
+        std::string path = findPath(filename, {});
+        if (!path.empty() && cache[filename].loadFromFile(path)) return &cache[filename];
         cache.erase(filename);
         return nullptr;
     }
 
-    // Préchargement ultra-rapide
-    inline void preloadAll() {
-        std::cout << "--- Preloading assets... ---" << std::endl;
-        
-        std::vector<std::string> basePaths = {"./assets", "./cmake-build-debug/assets"};
-        std::string assetsRoot = "";
-        for (const auto& bp : basePaths) {
-            if (std::filesystem::exists(bp)) {
-                assetsRoot = bp;
-                break;
-            }
-        }
-
-        if (assetsRoot.empty()) return;
-
-        for (const auto& entry : std::filesystem::recursive_directory_iterator(assetsRoot)) {
-            if (!entry.is_regular_file()) continue;
-
-            std::string path = entry.path().string();
-            std::string name = entry.path().filename().string();
-            std::string ext = entry.path().extension().string();
-
-            // Si c'est déjà dans le cache, on passe
-            if (textureCache().count(name) || soundCache().count(name) || fontCache().count(name)) continue;
-
-            if (ext == ".png" || ext == ".jpg" || ext == ".jpeg") {
-                directLoad(textureCache()[name], path);
-            } else if (ext == ".ogg" || ext == ".wav") {
-                directLoad(soundCache()[name], path);
-            } else if (ext == ".ttf") {
-                directLoadFont(fontCache()[name], path);
-            }
-        }
-        std::cout << "--- Assets preloaded! (" << textureCache().size() << " textures) ---" << std::endl;
-    }
-
-    // Compatibilité
     inline bool loadTexture(sf::Texture& tex, const std::string& filename) {
         sf::Texture* cached = getTexture(filename);
         if (cached) { tex = *cached; return true; }
         return false;
     }
+
     inline bool loadFont(sf::Font& font, const std::string& filename) {
         sf::Font* cached = getFont(filename);
-        if (cached) return font.openFromFile(filename); // Simplifié
+        if (cached) return font.openFromFile(findPath(filename, {}));
         return false;
+    }
+
+    inline std::string findAudioPath(const std::string& filename) {
+        return findPath(filename, {});
+    }
+
+    // Restore full preloading
+    inline void preloadAll() {
+        std::string root = findAssetsRoot();
+        if (root.empty()) {
+            std::cerr << "!!! Assets directory not found!" << std::endl;
+            return;
+        }
+
+        std::cout << "--- Preloading assets from: " << root << " ---" << std::endl;
+        for (const auto& entry : std::filesystem::recursive_directory_iterator(root)) {
+            if (!entry.is_regular_file()) continue;
+            std::string name = entry.path().filename().string();
+            std::string ext = entry.path().extension().string();
+
+            if (ext == ".png" || ext == ".jpg") {
+                (void)textureCache()[name].loadFromFile(entry.path().string());
+            } else if (ext == ".ogg" || ext == ".wav") {
+                (void)soundCache()[name].loadFromFile(entry.path().string());
+            } else if (ext == ".ttf") {
+                (void)fontCache()[name].openFromFile(entry.path().string());
+            }
+        }
+        std::cout << "--- Preload complete (" << textureCache().size() << " textures) ---" << std::endl;
+    }
+
+    inline void scaleToCoverLeft(sf::Sprite& sprite, float windowW, float windowH) {
+        auto texSize = sprite.getTexture().getSize();
+        if (texSize.x == 0 || texSize.y == 0) return;
+        float scaleX = windowW / (float)texSize.x;
+        float scaleY = windowH / (float)texSize.y;
+        float scale = std::max(scaleX, scaleY);
+        sprite.setScale({scale, scale});
+        sprite.setPosition({0.f, 0.f});
     }
 }
 

@@ -20,7 +20,7 @@ DressingState::DressingState(SceneManager* scenes_, const Save& save, int slotIn
     // bg: backstagesbg.png
     if (AssetLoader::loadTexture(bgTex, "backstagesbg.png")) {
         dressingBg = std::make_unique<sf::Sprite>(bgTex);
-        dressingBg->setScale(sf::Vector2f(WINDOW_WIDTH / (float)bgTex.getSize().x, WINDOW_HEIGHT / (float)bgTex.getSize().y));
+        AssetLoader::scaleToCoverLeft(*dressingBg, WINDOW_WIDTH, WINDOW_HEIGHT);
     }
 
     // back Button
@@ -30,11 +30,11 @@ DressingState::DressingState(SceneManager* scenes_, const Save& save, int slotIn
         backBtn->setPosition({20.f, WINDOW_HEIGHT - 130.f});
     }
 
-    // Small Inventory Button
+    // Small Inventory Button - MOVED slightly back to the left
     if (AssetLoader::loadTexture(invTex, "inventaire.png")) {
         invBtn = std::make_unique<sf::Sprite>(invTex);
         invBtn->setScale({0.26f, 0.26f});
-        invBtn->setPosition({WINDOW_WIDTH - 550.f, WINDOW_HEIGHT - 330.f});
+        invBtn->setPosition({WINDOW_WIDTH - 350.f, WINDOW_HEIGHT - 330.f});
     }
 
     // large Inventory Overlay

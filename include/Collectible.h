@@ -9,10 +9,11 @@ public:
     sf::Sprite sprite;
     int lane;
     float progress = 0.f;
+    bool isCostomable = false;
 
-    Collectible(const sf::Texture& tex, int l) : sprite(tex), lane(l) {
+    Collectible(const sf::Texture& tex, int l, bool costomable = false) : sprite(tex), lane(l), isCostomable(costomable) {
         sf::FloatRect b = sprite.getLocalBounds();
-        sprite.setOrigin({b.size.x , b.size.y});
+        sprite.setOrigin({b.size.x / 2.f , b.size.y});
     }
 
     bool update(float speed) {
