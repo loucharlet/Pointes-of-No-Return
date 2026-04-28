@@ -43,8 +43,8 @@ int main() {
             if (scenes.current()) scenes.current()->handleEvent(event, window);
         }
 
-        if (scenes.current()) scenes.current()->update(dt);
-        if (scenes.current()) scenes.current()->draw(window);
+        scenes.update(dt);
+        scenes.draw(window);
         window.display();
     }
 
