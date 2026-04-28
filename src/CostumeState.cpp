@@ -34,6 +34,13 @@ CostumeState::CostumeState(SceneManager* scenes_, const Save& save, int slotInde
         costuventoryBtn->setPosition({WINDOW_WIDTH / 2.f + 200.f, WINDOW_HEIGHT - 105.f});
     }
 
+    if (auto* tex = AssetLoader::getTexture("mouse_spritesheet.png")) {
+        mouseSprite = std::make_unique<sf::Sprite>(*tex);
+        mouseSprite->setTextureRect(sf::IntRect({0, 0}, {MOUSE_FRAME_WIDTH, MOUSE_FRAME_HEIGHT}));
+        mouseSprite->setScale({0.35f, 0.35f});
+        mouseSprite->setPosition({WINDOW_WIDTH / 2.f + 280.f, WINDOW_HEIGHT - 180.f});
+    }
+
     overlay.setSize({WINDOW_WIDTH, WINDOW_HEIGHT});
     overlay.setFillColor(sf::Color(0, 0, 0, 150));
 
@@ -51,7 +58,7 @@ CostumeState::CostumeState(SceneManager* scenes_, const Save& save, int slotInde
         {"rythmics", "modal_rythmics.png", 100}
     };
 
-    // Standardized spacing and sizing
+    // RESTORED scale and spacing from d391cec
     float stepX = 320.f;
     float startX = WINDOW_WIDTH / 2.f - stepX;
     float yPos = WINDOW_HEIGHT / 2.f - 60.f;
@@ -63,7 +70,7 @@ CostumeState::CostumeState(SceneManager* scenes_, const Save& save, int slotInde
         
         if (auto* tex = AssetLoader::getTexture(configs[i].img)) {
             cui.modalSprite = std::make_unique<sf::Sprite>(*tex);
-            cui.modalSprite->setScale({0.16f, 0.16f});
+            cui.modalSprite->setScale({0.16f, 0.16f}); // RESTORED
             auto b = cui.modalSprite->getLocalBounds();
             cui.modalSprite->setOrigin({b.size.x / 2.f, b.size.y / 2.f});
             cui.modalSprite->setPosition({startX + i * stepX, yPos});
@@ -71,7 +78,7 @@ CostumeState::CostumeState(SceneManager* scenes_, const Save& save, int slotInde
         
         if (auto* tex = AssetLoader::getTexture("verrouille.png")) {
             cui.btnSprite = std::make_unique<sf::Sprite>(*tex);
-            cui.btnSprite->setScale({0.08f, 0.08f});
+            cui.btnSprite->setScale({0.08f, 0.08f}); // RESTORED
         }
         
         costumes.push_back(std::move(cui));
@@ -81,7 +88,7 @@ CostumeState::CostumeState(SceneManager* scenes_, const Save& save, int slotInde
 }
 
 void CostumeState::updateCostumesUI() {
-    float buttonYOffset = 130.f;
+    float buttonYOffset = 130.f; // RESTORED
     for (auto& c : costumes) {
         c.isUnlocked = (saveData.costomables >= c.requiredCostomables);
         
@@ -97,7 +104,7 @@ void CostumeState::updateCostumesUI() {
                 c.btnSprite->setTexture(*tex, true);
             }
             
-            c.btnSprite->setScale({0.08f, 0.08f});
+            c.btnSprite->setScale({0.08f, 0.08f}); // RESTORED
             auto b = c.btnSprite->getLocalBounds();
             c.btnSprite->setOrigin({b.size.x / 2.f, b.size.y / 2.f});
             if (c.modalSprite) {
@@ -161,12 +168,27 @@ void CostumeState::handleEvent(const std::optional<sf::Event>& event, sf::Render
     }
 }
 
+void CostumeState::update(float dt) {
+    mouseTimer += dt;
+    if (mouseTimer >= MOUSE_FRAME_DURATION) {
+        mouseTimer -= MOUSE_FRAME_DURATION;
+        mouseFrame = (mouseFrame + 1) % MOUSE_FRAME_COUNT;
+        if (mouseSprite) {
+            mouseSprite->setTextureRect(sf::IntRect({mouseFrame * MOUSE_FRAME_WIDTH, 0}, {MOUSE_FRAME_WIDTH, MOUSE_FRAME_HEIGHT}));
+        }
+    }
+}
+
 void CostumeState::draw(sf::RenderWindow& window) {
     window.clear(sf::Color(15, 15, 20));
     if (bg) window.draw(*bg);
     if (backBtn) window.draw(*backBtn);
 
     if (costuventoryBtn) window.draw(*costuventoryBtn);
+
+    if (!showingCostumes && mouseSprite) {
+        window.draw(*mouseSprite);
+    }
 
     if (showingCostumes) {
         for (auto& c : costumes) {

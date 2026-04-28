@@ -136,6 +136,19 @@ namespace AssetLoader {
         sprite.setScale({scale, scale});
         sprite.setPosition({0.f, 0.f});
     }
+
+    inline void scaleToCoverCenter(sf::Sprite& sprite, float windowW, float windowH) {
+        auto texSize = sprite.getTexture().getSize();
+        if (texSize.x == 0 || texSize.y == 0) return;
+        float scaleX = windowW / (float)texSize.x;
+        float scaleY = windowH / (float)texSize.y;
+        float scale = std::max(scaleX, scaleY);
+        sprite.setScale({scale, scale});
+        
+        float newWidth = (float)texSize.x * scale;
+        float newHeight = (float)texSize.y * scale;
+        sprite.setPosition({(windowW - newWidth) / 2.f, (windowH - newHeight) / 2.f});
+    }
 }
 
 #endif

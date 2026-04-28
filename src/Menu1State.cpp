@@ -10,12 +10,12 @@
 Menu1State::Menu1State(SceneManager* manager)
     : scenes(manager)
 {
-    AssetLoader::loadTexture(bgTex, "menubg1.png");
-    bg = std::make_unique<sf::Sprite>(bgTex);
-    if (bgTex.getSize().x > 0 && bgTex.getSize().y > 0) {
-        bg->setScale(sf::Vector2f(WINDOW_WIDTH / (float)bgTex.getSize().x, WINDOW_HEIGHT / (float)bgTex.getSize().y));
-    }
-    bg->setPosition({0.f, 0.f});
+    // Use exact filenames found in directory
+    AssetLoader::loadTexture(bgTex1, "menubg1_.1png.png");
+    AssetLoader::loadTexture(bgTex2, "menubg1_2.png");
+    
+    bg = std::make_unique<sf::Sprite>(bgTex1);
+    AssetLoader::scaleToCoverCenter(*bg, WINDOW_WIDTH, WINDOW_HEIGHT);
 
     AssetLoader::loadFont(font, "police_futura.ttf");
     settingsUI.init(font);
@@ -30,7 +30,6 @@ Menu1State::Menu1State(SceneManager* manager)
         logo = std::make_unique<sf::Sprite>(logoTex);
         logo->setScale({0.11f, 0.11f});
         logo->setPosition({WINDOW_WIDTH - 310.f, 10.f});
-
     }
 
     AssetLoader::loadTexture(slotBtnTex, "Button_empty.png");
@@ -53,10 +52,8 @@ Menu1State::Menu1State(SceneManager* manager)
         sf::FloatRect rect(sf::Vector2f(centerX, startY + i * 130.f), sf::Vector2f(rectW, rectH));
         slotRects.push_back(rect);
 
-        // create text and center it on the button rect so it renders on top of the sprite
         sf::Text t(font, label, 25);
         sf::FloatRect tb = t.getLocalBounds();
-        // use .size.x/.size.y as the codebase uses sf::Rect with position/size
         t.setOrigin({tb.size.x/2.f, tb.size.y/2.f});
         t.setPosition({rect.position.x + rect.size.x/2.f, rect.position.y + rect.size.y/2.f});
         t.setFillColor(sf::Color::White);
@@ -64,47 +61,48 @@ Menu1State::Menu1State(SceneManager* manager)
         t.setOutlineThickness(2.f);
         slotsText.push_back(t);
     }
-    // create a reusable sprite if texture loaded
     if (slotBtnTex.getSize().x > 0) slotBtn = std::make_unique<sf::Sprite>(slotBtnTex);
 }
-
 
 void Menu1State::handleEvent(const std::optional<sf::Event>& event, sf::RenderWindow& window) {
     if (!event) return;
     if (const auto* mbp = event->getIf<sf::Event::MouseButtonPressed>()) {
         sf::Vector2f mPos = window.mapPixelToCoords(mbp->position);
 
-        if (settingsUI.handleClick(
-                mPos,
-                [&]() { window.close(); },
-                [&]() { scenes->setScene(std::make_unique<Menu1State>(scenes)); }
-            )) {
-            return;
-        }
+        if (settingsUI.handleClick(mPos, [&]() { window.close(); }, [&]() { scenes->setScene(std::make_unique<Menu1State>(scenes)); })) return;
 
         if (backBtn && backBtn->getGlobalBounds().contains(mPos)) {
-            window.close(); // Back from first menu means exit
+            window.close();
             return;
         }
 
         for (size_t i = 0; i < slotRects.size(); ++i) {
-
             if (slotRects[i].contains(mPos)) {
                 Save s;
                 bool ok = SaveManager::load(s, slotPaths[i]);
                 if (!ok) {
-                    // start new game with default save
                     s.playerName = "player";
                     s.coll1 = 0; s.coll2 = 0; s.coll3 = 0; s.coll4 = 0;
+                    s.costomables = 0;
                     s.highscore = 0;
                     s.levelReached = 0;
-                    // write to file so slot is now occupied
                     SaveManager::save(s, slotPaths[i]);
                 }
-                // transition to Menu2 with the loaded save
-                scenes->setScene(std::make_unique<Menu2State>(scenes, s, i, slotPaths[i]));
+                scenes->setScene(std::make_unique<Menu2State>(scenes, s, (int)i, slotPaths[i]));
                 break;
             }
+        }
+    }
+}
+
+void Menu1State::update(float dt) {
+    bgTimer += dt;
+    if (bgTimer >= 0.5f) {
+        bgTimer -= 0.5f;
+        bgIndex = (bgIndex + 1) % 2;
+        if (bg) {
+            bg->setTexture(bgIndex == 0 ? bgTex1 : bgTex2);
+            AssetLoader::scaleToCoverCenter(*bg, WINDOW_WIDTH, WINDOW_HEIGHT);
         }
     }
 }
@@ -115,11 +113,9 @@ void Menu1State::draw(sf::RenderWindow& window) {
     if (logo) window.draw(*logo);
     if (backBtn) window.draw(*backBtn);
 
-    // draw slot buttons (sprite) and text label on top
     for (size_t i = 0; i < slotRects.size(); ++i) {
         const auto& r = slotRects[i];
         if (slotBtn) {
-            // maintain aspect ratio, center sprite inside rect (do not stretch)
             auto ts = slotBtnTex.getSize();
             if (ts.x > 0 && ts.y > 0) {
                 float scaleX = r.size.x / (float)ts.x;
@@ -143,9 +139,7 @@ void Menu1State::draw(sf::RenderWindow& window) {
             box.setOutlineThickness(2.f);
             window.draw(box);
         }
-        // draw text label
         if (i < slotsText.size()) window.draw(slotsText[i]);
     }
-
     settingsUI.draw(window);
 }

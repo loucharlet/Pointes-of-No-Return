@@ -30,11 +30,20 @@ DressingState::DressingState(SceneManager* scenes_, const Save& save, int slotIn
         backBtn->setPosition({20.f, WINDOW_HEIGHT - 130.f});
     }
 
-    // Small Inventory Button - MOVED slightly back to the left
+    // Small Inventory Button
     if (AssetLoader::loadTexture(invTex, "inventaire.png")) {
         invBtn = std::make_unique<sf::Sprite>(invTex);
         invBtn->setScale({0.26f, 0.26f});
         invBtn->setPosition({WINDOW_WIDTH - 350.f, WINDOW_HEIGHT - 330.f});
+    }
+
+    // Mouse animation initialization
+    if (auto* tex = AssetLoader::getTexture("mouse_spritesheet.png")) {
+        mouseSprite = std::make_unique<sf::Sprite>(*tex);
+        mouseSprite->setTextureRect(sf::IntRect({0, 0}, {MOUSE_FRAME_WIDTH, MOUSE_FRAME_HEIGHT}));
+        mouseSprite->setScale({0.35f, 0.35f});
+        // Position near bottom right of the inventory button area
+        mouseSprite->setPosition({WINDOW_WIDTH - 130.f, WINDOW_HEIGHT - 130.f});
     }
 
     // large Inventory Overlay
@@ -83,6 +92,17 @@ void DressingState::handleEvent(const std::optional<sf::Event>& event, sf::Rende
     }
 }
 
+void DressingState::update(float dt) {
+    mouseTimer += dt;
+    if (mouseTimer >= MOUSE_FRAME_DURATION) {
+        mouseTimer -= MOUSE_FRAME_DURATION;
+        mouseFrame = (mouseFrame + 1) % MOUSE_FRAME_COUNT;
+        if (mouseSprite) {
+            mouseSprite->setTextureRect(sf::IntRect({mouseFrame * MOUSE_FRAME_WIDTH, 0}, {MOUSE_FRAME_WIDTH, MOUSE_FRAME_HEIGHT}));
+        }
+    }
+}
+
 void DressingState::draw(sf::RenderWindow& window) {
     window.clear(sf::Color(12,12,20));
     if (dressingBg) window.draw(*dressingBg);
@@ -90,6 +110,10 @@ void DressingState::draw(sf::RenderWindow& window) {
     
     if (!showingInventory && invBtn) {
         window.draw(*invBtn);
+    }
+
+    if (!showingInventory && mouseSprite) {
+        window.draw(*mouseSprite);
     }
 
     if (showingInventory && invOpenSprite) {

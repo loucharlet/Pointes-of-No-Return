@@ -16,7 +16,7 @@ public:
     void onEnter() override {}
     void onExit() override {}
     void handleEvent(const std::optional<sf::Event>& event, sf::RenderWindow& window) override;
-    void update(float dt) override {}
+    void update(float dt) override;
     void draw(sf::RenderWindow& window) override;
 
 private:
@@ -40,6 +40,15 @@ private:
     bool showingInventory = false;
 
     SettingsUI settingsUI;
+
+    // Mouse animation
+    std::unique_ptr<sf::Sprite> mouseSprite;
+    int mouseFrame = 0;
+    float mouseTimer = 0.f;
+    static constexpr int MOUSE_FRAME_COUNT = 15;
+    static constexpr int MOUSE_FRAME_WIDTH = 256;
+    static constexpr int MOUSE_FRAME_HEIGHT = 256;
+    static constexpr float MOUSE_FRAME_DURATION = 0.07f;
 };
 
 // factory

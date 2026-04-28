@@ -16,13 +16,16 @@ public:
     void onEnter() override {}
     void onExit() override {}
     void handleEvent(const std::optional<sf::Event>& event, sf::RenderWindow& window) override;
-    void update(float dt) override {}
+    void update(float dt) override;
     void draw(sf::RenderWindow& window) override;
 
 private:
     SceneManager* scenes;
-    sf::Texture bgTex;
+    sf::Texture bgTex1, bgTex2;
     std::unique_ptr<sf::Sprite> bg;
+    float bgTimer = 0.f;
+    int bgIndex = 0;
+
     sf::Font font;
     std::vector<sf::Text> slotsText;
     std::vector<std::string> slotPaths;
