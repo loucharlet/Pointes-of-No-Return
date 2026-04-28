@@ -42,7 +42,7 @@ sf::View getLetterboxView(sf::View view, int windowWidth, int windowHeight) {
         posY = (1.f - sizeY) / 2.f;
     }
 
-    view.setViewport({posX, posY, sizeX, sizeY});
+    view.setViewport({ {posX, posY}, {sizeX, sizeY} });
     return view;
 }
 
