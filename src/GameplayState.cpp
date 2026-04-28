@@ -136,11 +136,13 @@ GameplayState::~GameplayState() {
 }
 
 void GameplayState::onEnter() {
-    // nothing
+    scenes->stopMenuMusic();
 }
 
 void GameplayState::onExit() {
-    // nothing
+    scenes->playMenuMusic();
+    levelMusic.stop();
+    gameOverMusic.stop();
 }
 
 void GameplayState::handleEvent(const std::optional<sf::Event>& event, sf::RenderWindow& window) {

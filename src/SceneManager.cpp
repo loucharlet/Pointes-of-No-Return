@@ -1,9 +1,30 @@
 #include "SceneManager.h"
 #include "Constants.h"
 
+#include "AppSettings.h"
+
 SceneManager::SceneManager() {
     fadeRect.setSize({WINDOW_WIDTH, WINDOW_HEIGHT});
     fadeRect.setFillColor(sf::Color(0, 0, 0, 0));
+
+    std::string musicPath = AssetLoader::findAudioPath("menu_theme.ogg");
+    if (!musicPath.empty()) {
+        if (menuMusic.openFromFile(musicPath)) {
+            menuMusic.setLooping(true);
+            menuMusic.setVolume(AppSettings::volume);
+            if (AppSettings::musicOn) menuMusic.play();
+        }
+    }
+}
+
+void SceneManager::playMenuMusic() {
+    if (menuMusic.getStatus() != sf::SoundSource::Status::Playing && AppSettings::musicOn) {
+        menuMusic.play();
+    }
+}
+
+void SceneManager::stopMenuMusic() {
+    menuMusic.stop();
 }
 
 void SceneManager::setScene(std::unique_ptr<Scene> scene) {

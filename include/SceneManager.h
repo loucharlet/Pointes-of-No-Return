@@ -15,6 +15,9 @@ public:
     void update(float dt);
     void draw(sf::RenderWindow& window);
 
+    void playMenuMusic();
+    void stopMenuMusic();
+
 private:
     std::unique_ptr<Scene> currentScene;
     std::unique_ptr<Scene> nextScene;
@@ -22,6 +25,8 @@ private:
     bool isFading = false;
     bool fadingToBlack = true;
     sf::RectangleShape fadeRect;
+
+    sf::Music menuMusic;
 };
 
 #endif
