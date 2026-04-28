@@ -21,7 +21,7 @@ public:
 
 private:
     SceneManager* scenes;
-    sf::Texture bgTex1, bgTex2;
+    std::vector<sf::Texture> bgTextures;
     std::unique_ptr<sf::Sprite> bg;
     float bgTimer = 0.f;
     int bgIndex = 0;

@@ -10,12 +10,17 @@
 Menu1State::Menu1State(SceneManager* manager)
     : scenes(manager)
 {
-    // Use exact filenames found in directory
-    AssetLoader::loadTexture(bgTex1, "menubg1_.1png.png");
-    AssetLoader::loadTexture(bgTex2, "menubg1_2.png");
-    
-    bg = std::make_unique<sf::Sprite>(bgTex1);
-    AssetLoader::scaleToCoverCenter(*bg, WINDOW_WIDTH, WINDOW_HEIGHT);
+    // Load all 7 background textures
+    bgTextures.resize(7);
+    for (int i = 0; i < 7; ++i) {
+        std::string fileName = "menubg1_" + std::to_string(i + 1) + ".png";
+        AssetLoader::loadTexture(bgTextures[i], fileName);
+    }
+
+    if (!bgTextures.empty()) {
+        bg = std::make_unique<sf::Sprite>(bgTextures[0]);
+        AssetLoader::scaleToCoverCenter(*bg, WINDOW_WIDTH, WINDOW_HEIGHT);
+    }
 
     AssetLoader::loadFont(font, "police_futura.ttf");
     settingsUI.init(font);
@@ -99,10 +104,12 @@ void Menu1State::update(float dt) {
     bgTimer += dt;
     if (bgTimer >= 0.5f) {
         bgTimer -= 0.5f;
-        bgIndex = (bgIndex + 1) % 2;
-        if (bg) {
-            bg->setTexture(bgIndex == 0 ? bgTex1 : bgTex2);
-            AssetLoader::scaleToCoverCenter(*bg, WINDOW_WIDTH, WINDOW_HEIGHT);
+        if (!bgTextures.empty()) {
+            bgIndex = (bgIndex + 1) % (int)bgTextures.size();
+            if (bg) {
+                bg->setTexture(bgTextures[bgIndex]);
+                AssetLoader::scaleToCoverCenter(*bg, WINDOW_WIDTH, WINDOW_HEIGHT);
+            }
         }
     }
 }
